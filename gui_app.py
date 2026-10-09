@@ -108,7 +108,7 @@ class ModernFuzzySprinklerApp(tk.Tk):
         self.style.configure("Vertical.TScrollbar", background=COLOR_CARD, troughcolor=COLOR_BG_APP, borderwidth=0)
 
     # =========================================================================
-    # SIDEBAR KIRI (SEPERTI GAMBAR: LOGO, PROFIL MAHASISWA, MENU, INFO DOSEN)
+    # SIDEBAR KIRI (SEPERTI GAMBAR: LOGO, INFO DOSEN, PROFIL MAHASISWA, MENU)
     # =========================================================================
     def create_sidebar(self):
         self.sidebar = tk.Frame(self, bg=COLOR_SIDEBAR, width=280)
@@ -116,7 +116,7 @@ class ModernFuzzySprinklerApp(tk.Tk):
         self.sidebar.pack_propagate(False)
 
         # 1. Logo / Branding Aplikasi (Gaya "Modly")
-        logo_box = tk.Frame(self.sidebar, bg=COLOR_SIDEBAR, padx=24, pady=24)
+        logo_box = tk.Frame(self.sidebar, bg=COLOR_SIDEBAR, padx=22, pady=18)
         logo_box.pack(fill="x")
 
         lbl_logo = tk.Label(logo_box, text="🌱 AgroFuzzy", bg=COLOR_SIDEBAR, fg=ACCENT_LIME,
@@ -127,61 +127,68 @@ class ModernFuzzySprinklerApp(tk.Tk):
                               fg=TEXT_MUTED, font=("Segoe UI", 8))
         lbl_sublogo.pack(anchor="w", pady=(2, 0))
 
-        # 2. User Profile Card (Esther Howard Style -> Teuku Azhar Pasha)
-        user_card = tk.Frame(self.sidebar, bg=COLOR_CARD, padx=14, pady=12,
+        # 2. Kotak Dosen Pengampu & Mata Kuliah (BERADA DI ATAS KOTAK NAMA)
+        dosen_card = tk.Frame(self.sidebar, bg=COLOR_CARD, padx=14, pady=11,
+                              highlightbackground=COLOR_BORDER, highlightthickness=1)
+        dosen_card.pack(fill="x", padx=16, pady=(0, 10))
+
+        lbl_dosen_tag = tk.Label(dosen_card, text="DOSEN PENGAMPU & MATA KULIAH", bg=COLOR_CARD, fg=TEXT_MUTED,
+                                 font=("Segoe UI", 7, "bold"))
+        lbl_dosen_tag.pack(anchor="w")
+
+        lbl_dosen_name = tk.Label(dosen_card, text="Dr. E. Agung Nugroho, ST., MT", bg=COLOR_CARD,
+                                  fg=TEXT_WHITE, font=("Segoe UI", 9, "bold"))
+        lbl_dosen_name.pack(anchor="w", pady=(1, 2))
+
+        lbl_mk = tk.Label(dosen_card, text="MKP501 Sistem Cerdas • Sem 5", bg=COLOR_CARD,
+                          fg=ACCENT_LIME, font=("Segoe UI", 8, "bold"))
+        lbl_mk.pack(anchor="w")
+
+        # 3. User Profile Card (Teuku Azhar Pasha - BERADA DI BAWAH KOTAK DOSEN)
+        user_card = tk.Frame(self.sidebar, bg=COLOR_CARD, padx=14, pady=11,
                              highlightbackground=COLOR_BORDER, highlightthickness=1)
-        user_card.pack(fill="x", padx=18, pady=(0, 20))
+        user_card.pack(fill="x", padx=16, pady=(0, 16))
 
         # Avatar Box (Inisial Elegan)
-        avatar_box = tk.Frame(user_card, bg="#1A1B20", width=42, height=42,
+        avatar_box = tk.Frame(user_card, bg="#1A1B20", width=38, height=38,
                               highlightbackground=ACCENT_LIME, highlightthickness=1)
         avatar_box.pack(side="left", padx=(0, 10))
         avatar_box.pack_propagate(False)
         lbl_avatar = tk.Label(avatar_box, text="TAP", bg="#1A1B20", fg=ACCENT_LIME,
-                              font=("Segoe UI", 10, "bold"))
+                              font=("Segoe UI", 9, "bold"))
         lbl_avatar.pack(expand=True)
 
         user_info = tk.Frame(user_card, bg=COLOR_CARD)
         user_info.pack(side="left", fill="x", expand=True)
 
         lbl_nama = tk.Label(user_info, text="Teuku Azhar Pasha", bg=COLOR_CARD, fg=TEXT_WHITE,
-                            font=("Segoe UI", 10, "bold"))
+                            font=("Segoe UI", 9, "bold"))
         lbl_nama.pack(anchor="w")
 
         lbl_nim = tk.Label(user_info, text="NIM: 202406036 (Genap)", bg=COLOR_CARD, fg=TEXT_MUTED,
                            font=("Segoe UI", 8))
         lbl_nim.pack(anchor="w")
 
-        lbl_prodi = tk.Label(user_info, text="TRM • Politeknik Enjinering Indorama", bg=COLOR_CARD,
+        lbl_prodi = tk.Label(user_info, text="TRM • PEI Purwakarta", bg=COLOR_CARD,
                              fg=ACCENT_LIME, font=("Segoe UI", 7, "bold"))
         lbl_prodi.pack(anchor="w")
 
-        # 3. Navigasi Vertikal (Pill Menu)
-        self.nav_container = tk.Frame(self.sidebar, bg=COLOR_SIDEBAR, padx=14)
+        # 4. Navigasi Vertikal (Pill Menu)
+        self.nav_container = tk.Frame(self.sidebar, bg=COLOR_SIDEBAR, padx=12)
         self.nav_container.pack(fill="x")
 
-        # 4. Info Dosen Pengampu & Mata Kuliah di Bawah Sidebar
-        bottom_box = tk.Frame(self.sidebar, bg=COLOR_CARD, padx=14, pady=14,
-                              highlightbackground=COLOR_BORDER, highlightthickness=1)
-        bottom_box.pack(side="bottom", fill="x", padx=18, pady=20)
-
-        lbl_dosen_tag = tk.Label(bottom_box, text="DOSEN PENGAMPU", bg=COLOR_CARD, fg=TEXT_MUTED,
-                                 font=("Segoe UI", 7, "bold"))
-        lbl_dosen_tag.pack(anchor="w")
-
-        lbl_dosen_name = tk.Label(bottom_box, text="Dr. E. Agung Nugroho, ST., MT", bg=COLOR_CARD,
-                                  fg=TEXT_WHITE, font=("Segoe UI", 9, "bold"))
-        lbl_dosen_name.pack(anchor="w", pady=(1, 4))
-
-        lbl_mk = tk.Label(bottom_box, text="MKP501 Sistem Cerdas • Sem 5", bg=COLOR_CARD,
-                          fg=ACCENT_LIME, font=("Segoe UI", 8))
-        lbl_mk.pack(anchor="w")
+        # Footer Sederhana di Bawah Sidebar
+        footer_box = tk.Frame(self.sidebar, bg=COLOR_SIDEBAR, padx=16, pady=12)
+        footer_box.pack(side="bottom", fill="x")
+        lbl_foot = tk.Label(footer_box, text="PEI Mechatronics 2026/2027", bg=COLOR_SIDEBAR,
+                            fg="#474B57", font=("Segoe UI", 8))
+        lbl_foot.pack(anchor="center")
 
     def register_nav_buttons(self):
         menu_items = [
             ("simulasi",  "⚡  Simulasi Real-Time"),
             ("kurva_mf",  "📈  Kurva Membership"),
-            ("tabel_uji", "📋  Tabel 10 Pengujian"),
+            ("tabel_uji", "📋  Tabel Pengujian"),
             ("analisis",  "🧠  Rule Base & Analisis")
         ]
 
@@ -215,8 +222,8 @@ class ModernFuzzySprinklerApp(tk.Tk):
             self.lbl_page_subtitle.configure(text="Visualisasi kurva segitiga untuk Suhu, Kelembapan Tanah, dan Durasi Penyiraman")
             self.view_mf.pack(fill="both", expand=True)
         elif target_key == "tabel_uji":
-            self.lbl_page_title.configure(text="Evaluasi 10 Skenario Pengujian")
-            self.lbl_page_subtitle.configure(text="5 data wajib dari lembar soal UTS + 5 data variasi kondisi transisi")
+            self.lbl_page_title.configure(text="Evaluasi Tabel Pengujian")
+            self.lbl_page_subtitle.configure(text="Daftar skenario pengujian UTS dan data interaktif yang ditambahkan")
             self.view_tabel.pack(fill="both", expand=True)
         elif target_key == "analisis":
             self.lbl_page_title.configure(text="Matriks 9 Rule Base & Jawaban Analisis UTS")
@@ -322,13 +329,13 @@ class ModernFuzzySprinklerApp(tk.Tk):
         self.entry_suhu.bind("<Return>", self.on_entry_suhu_confirm)
         self.entry_suhu.bind("<FocusOut>", self.on_entry_suhu_confirm)
 
-        # Status & Derajat Suhu
+        # Status & Derajat Suhu (Font Diperbesar & Kontras Tinggi)
         self.lbl_mu_suhu = tk.Label(card_input, text="Dingin: 0.00 | Normal: 1.00 | Panas: 0.00", bg=COLOR_CARD,
-                                    fg=TEXT_MUTED, font=("Consolas", 8))
-        self.lbl_mu_suhu.pack(anchor="w", pady=(2, 0))
+                                    fg="#CBD5E1", font=("Segoe UI", 9))
+        self.lbl_mu_suhu.pack(anchor="w", pady=(3, 1))
 
         self.lbl_warn_suhu = tk.Label(card_input, textvariable=self.status_suhu_clamp, bg=COLOR_CARD,
-                                      fg=ACCENT_LIME, font=("Segoe UI", 7))
+                                      fg="#A3E635", font=("Segoe UI", 9, "bold"))
         self.lbl_warn_suhu.pack(anchor="w", pady=(0, 12))
 
         # --- B. Kelembapan Tanah ---
@@ -357,14 +364,22 @@ class ModernFuzzySprinklerApp(tk.Tk):
         self.entry_kel.bind("<Return>", self.on_entry_kel_confirm)
         self.entry_kel.bind("<FocusOut>", self.on_entry_kel_confirm)
 
-        # Status & Derajat Kelembapan
+        # Status & Derajat Kelembapan (Font Diperbesar & Kontras Tinggi)
         self.lbl_mu_kel = tk.Label(card_input, text="Kering: 0.00 | Normal: 1.00 | Lembap: 0.00", bg=COLOR_CARD,
-                                   fg=TEXT_MUTED, font=("Consolas", 8))
-        self.lbl_mu_kel.pack(anchor="w", pady=(2, 0))
+                                   fg="#CBD5E1", font=("Segoe UI", 9))
+        self.lbl_mu_kel.pack(anchor="w", pady=(3, 1))
 
         self.lbl_warn_kel = tk.Label(card_input, textvariable=self.status_kel_clamp, bg=COLOR_CARD,
-                                     fg=ACCENT_LIME, font=("Segoe UI", 7))
-        self.lbl_warn_kel.pack(anchor="w", pady=(0, 2))
+                                     fg="#A3E635", font=("Segoe UI", 9, "bold"))
+        self.lbl_warn_kel.pack(anchor="w", pady=(0, 6))
+
+        # Tombol Masukkan ke Tabel Pengujian
+        btn_add_table = tk.Button(card_input, text="➕  Masukkan ke Tabel Pengujian", bg="#2B303C", fg=ACCENT_LIME,
+                                  font=("Segoe UI", 9, "bold"), relief="flat", activebackground="#3A4150",
+                                  activeforeground=TEXT_WHITE, cursor="hand2", padx=12, pady=7, bd=0,
+                                  highlightbackground=COLOR_BORDER, highlightthickness=1,
+                                  command=self.tambah_ke_tabel_pengujian)
+        btn_add_table.pack(fill="x", pady=(8, 0))
 
         # CARD 2: HASIL REKOMENDASI DURASI (SEPERTI CARD SKOR BESAR PADA GAMBAR REFERENSI)
         card_output = tk.Frame(col_left, bg=COLOR_CARD, padx=20, pady=20,
@@ -515,9 +530,36 @@ class ModernFuzzySprinklerApp(tk.Tk):
         self.var_kelembapan_text.set("50.0")
         self.status_suhu_clamp.set("Rentang Normal (0 – 40 °C)")
         self.status_kel_clamp.set("Rentang Normal (0 – 100 %)")
-        self.lbl_warn_suhu.configure(fg=ACCENT_LIME)
-        self.lbl_warn_kel.configure(fg=ACCENT_LIME)
+        self.lbl_warn_suhu.configure(fg="#A3E635")
+        self.lbl_warn_kel.configure(fg="#A3E635")
         self.update_simulation_live()
+
+    def tambah_ke_tabel_pengujian(self):
+        suhu = self.var_suhu.get()
+        kelembapan = self.var_kelembapan.get()
+        res = self.fuzzy_engine.compute(suhu, kelembapan)
+        durasi = res['hasil_defuzzifikasi']
+        if durasi <= 10.0:
+            kat = "Singkat"
+        elif durasi <= 20.0:
+            kat = "Sedang"
+        else:
+            kat = "Lama"
+
+        no_baru = len(self.tree.get_children()) + 1
+        ket = f"Uji Real-time: Suhu {suhu:.1f}°C, Kel {kelembapan:.1f}%"
+
+        self.tree.insert("", "end", values=(
+            no_baru, f"{suhu:.1f}", f"{kelembapan:.1f}", f"{durasi:.2f}", kat, ket
+        ))
+
+        messagebox.showinfo("Berhasil Ditambahkan",
+                            f"Skenario berhasil dimasukkan ke Tabel Pengujian!\n\n"
+                            f"• No          : {no_baru}\n"
+                            f"• Suhu        : {suhu:.1f} °C\n"
+                            f"• Kelembapan  : {kelembapan:.1f} %\n"
+                            f"• Rekomendasi : {durasi:.2f} Menit ({kat})\n\n"
+                            f"Buka tab '📋 Tabel Pengujian' untuk melihat daftar lengkap.")
 
     # =========================================================================
     # RENDER LIVE SIMULASI MATPLOTLIB PLOT
@@ -670,7 +712,7 @@ class ModernFuzzySprinklerApp(tk.Tk):
         bar_action = tk.Frame(card, bg=COLOR_CARD)
         bar_action.pack(fill="x", pady=(0, 12))
 
-        lbl_t_head = tk.Label(bar_action, text="Hasil Evaluasi Batch 10 Skenario", bg=COLOR_CARD,
+        lbl_t_head = tk.Label(bar_action, text="Daftar Skenario & Riwayat Pengujian", bg=COLOR_CARD,
                               fg=TEXT_WHITE, font=("Segoe UI", 11, "bold"))
         lbl_t_head.pack(side="left")
 
@@ -679,6 +721,12 @@ class ModernFuzzySprinklerApp(tk.Tk):
                                cursor="hand2", padx=12, pady=5, bd=0, highlightbackground=COLOR_BORDER,
                                highlightthickness=1, command=self.export_table_to_csv)
         btn_export.pack(side="right", padx=(8, 0))
+
+        btn_reset_tb = tk.Button(bar_action, text="🔄  Reset 10 Data Awal", bg=COLOR_CARD_HOVER, fg=TEXT_MUTED,
+                                 font=("Segoe UI", 8, "bold"), relief="flat", activebackground="#353945",
+                                 cursor="hand2", padx=12, pady=5, bd=0, highlightbackground=COLOR_BORDER,
+                                 highlightthickness=1, command=self.populate_table_data)
+        btn_reset_tb.pack(side="right", padx=(8, 0))
 
         btn_apply = tk.Button(bar_action, text="⚡  Terapkan ke Simulasi", bg=ACCENT_LIME, fg=TEXT_DARK,
                               font=("Segoe UI", 8, "bold"), relief="flat", activebackground="#BCE62C",
