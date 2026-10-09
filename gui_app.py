@@ -1,10 +1,11 @@
 """
-Aplikasi GUI: Sistem Cerdas Pengendalian Penyiraman Tanaman (Fuzzy Mamdani)
-Mata Kuliah: MKP501 Sistem Cerdas
-Mahasiswa  : Teuku Azhar Pasha (NIM: 202406036)
-Dosen      : Dr. E. Agung Nugroho, ST., MT
-Program Studi: Sarjana Terapan Teknologi Rekayasa Mekatronika (TRM)
-Politeknik Enjinering Indorama (PEI)
+Aplikasi Desktop Modern: Sistem Cerdas Pengendalian Penyiraman Tanaman (Fuzzy Mamdani)
+Desain: Ultra-Modern Dark Dashboard (Matte Obsidian & Electric Lime Accent)
+Mata Kuliah : MKP501 Sistem Cerdas
+Mahasiswa   : Teuku Azhar Pasha (NIM: 202406036)
+Dosen       : Dr. E. Agung Nugroho, ST., MT
+Prodi       : Sarjana Terapan Teknologi Rekayasa Mekatronika (TRM)
+Institusi   : Politeknik Enjinering Indorama (PEI)
 """
 
 import os
@@ -20,393 +21,506 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from fuzzy_system import FuzzySprinklerSystem, trimf
 
 
-# --- PALET WARNA PROFESSIONAL ERGONOMIC SLATE ---
-BG_DARK = "#1E222B"          # Background utama jendela
-BG_CARD = "#282C37"          # Kontainer / Card background
-BG_HEADER = "#161920"        # Header Bar
-BG_INPUT = "#1A1D24"         # Background kotak teks isian
-TEXT_MAIN = "#F1F5F9"        # Teks utama (putih lembut)
-TEXT_MUTED = "#94A3B8"       # Teks keterangan (abu-abu sejuk)
-ACCENT_BLUE = "#3B82F6"      # Biru rekayasa
-ACCENT_CYAN = "#38BDF8"      # Cyan cerah untuk angka
-ACCENT_GREEN = "#10B981"     # Hijau segar untuk output durasi
-ACCENT_AMBER = "#F59E0B"     # Amber / oranye untuk centroid & peringatan
-BORDER_COLOR = "#334155"     # Border halus
-PLOT_BG = "#222630"          # Kanvas plot matplotlib
+# =============================================================================
+# PALET WARNA SESUAI GAMBAR REFERENSI (MODLY / ULTRA-MODERN DARK MINIMALIST)
+# =============================================================================
+COLOR_BG_APP     = "#18191D"      # Matte Obsidian Black (Latar Utama)
+COLOR_CARD       = "#22242A"      # Soft Charcoal Graphite (Permukaan Kartu)
+COLOR_CARD_HOVER = "#2A2C34"      # Hover state kartu/tombol
+COLOR_SIDEBAR    = "#141518"      # Sidebar Kiri Lebih Gelap
+COLOR_INPUT_BOX  = "#1A1B20"      # Kotak isian Text Box
+COLOR_BORDER     = "#2E313A"      # Garis batas ultra-halus (subtle border)
+
+# ACCENT COLORS (DISIPLIN & MINIMALIS)
+ACCENT_LIME      = "#D2F83A"      # Electric Lime / Neon Chartreuse (Signature Accent)
+ACCENT_LIME_DARK = "#9EBE1D"      # Versi lebih redup untuk border/teks halus
+ACCENT_PURPLE    = "#A78BFA"      # Soft Lavender untuk kurva implikasi
+ACCENT_ROSE      = "#F472B6"      # Soft Rose untuk kurva pelengkap
+ACCENT_AMBER     = "#FBBF24"      # Soft Amber untuk warning/agregasi
+
+# TYPOGRAPHY COLORS
+TEXT_WHITE       = "#FFFFFF"      # Putih bersih untuk nilai data utama / judul
+TEXT_MUTED       = "#8E92A0"      # Abu-abu sejuk untuk label & deskripsi
+TEXT_DARK        = "#141518"      # Teks gelap di atas tombol lime
 
 
-class FuzzySprinklerGUI(tk.Tk):
+class ModernFuzzySprinklerApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Sistem Cerdas Pengendalian Penyiraman Tanaman - Fuzzy Mamdani [PEI TRM]")
-        self.geometry("1280 to 820".replace(" to ", "x"))
-        self.minsize(1100, 720)
-        self.configure(bg=BG_DARK)
+        self.title("AgroFuzzy - Smart Irrigation Control System [PEI TRM]")
+        self.geometry("1300x820")
+        self.minsize(1150, 720)
+        self.configure(bg=COLOR_BG_APP)
 
         # Inisialisasi Engine Fuzzy
         self.fuzzy_engine = FuzzySprinklerSystem()
 
-        # Variabel Data Input
+        # Variabel Parameter Input
         self.var_suhu = tk.DoubleVar(value=25.0)
         self.var_kelembapan = tk.DoubleVar(value=50.0)
         self.var_suhu_text = tk.StringVar(value="25.0")
         self.var_kelembapan_text = tk.StringVar(value="50.0")
 
-        # Flag pencegah recursive callback pada sync 2 arah
-        self._updating_from_slider = False
-        self._updating_from_entry = False
+        # Flags Sinkronisasi 2 Arah
+        self._sync_lock = False
 
-        # Status peringatan clamping
-        self.status_suhu_warning = tk.StringVar(value="Dalam Rentang Normal [0 - 40 °C]")
-        self.status_kelembapan_warning = tk.StringVar(value="Dalam Rentang Normal [0 - 100 %]")
+        # Status Peringatan Batas Input (Safety Clamp)
+        self.status_suhu_clamp = tk.StringVar(value="Rentang Normal (0 – 40 °C)")
+        self.status_kel_clamp = tk.StringVar(value="Rentang Normal (0 – 100 %)")
 
-        # Setup Styling TTK
-        self.setup_styles()
+        # Konfigurasi Styling TTK
+        self.setup_ttk_styles()
 
-        # Buat Komponen Tampilan
-        self.create_header()
-        self.create_tab_interface()
-        self.create_status_bar()
+        # Layout Utama: Sidebar Kiri & Konten Kanan
+        self.create_sidebar()
+        self.create_main_content()
 
-        # Plot awal
+        # Buka Halaman Utama (Simulasi)
+        self.nav_buttons = {}
+        self.register_nav_buttons()
+        self.switch_view("simulasi")
+
+        # Eksekusi Render Awal
         self.update_simulation_live()
 
-    def setup_styles(self):
+    def setup_ttk_styles(self):
         self.style = ttk.Style(self)
         self.style.theme_use("clam")
 
-        # Tab Notebook
-        self.style.configure("TNotebook", background=BG_DARK, borderwidth=0)
-        self.style.configure("TNotebook.Tab", background=BG_CARD, foreground=TEXT_MUTED,
-                             padding=[18, 9], font=("Segoe UI", 10, "bold"), borderwidth=0)
-        self.style.map("TNotebook.Tab",
-                       background=[("selected", ACCENT_BLUE)],
-                       foreground=[("selected", "#FFFFFF")])
-
         # Treeview (Tabel Pengujian)
         self.style.configure("Treeview",
-                             background=BG_CARD,
-                             foreground=TEXT_MAIN,
-                             fieldbackground=BG_CARD,
-                             rowheight=28,
-                             font=("Segoe UI", 9))
+                             background=COLOR_CARD,
+                             foreground=TEXT_WHITE,
+                             fieldbackground=COLOR_CARD,
+                             rowheight=32,
+                             font=("Segoe UI", 9),
+                             borderwidth=0)
         self.style.configure("Treeview.Heading",
-                             background=BG_HEADER,
-                             foreground=TEXT_MAIN,
+                             background="#1A1B20",
+                             foreground=TEXT_MUTED,
                              font=("Segoe UI", 9, "bold"),
                              relief="flat")
         self.style.map("Treeview",
-                       background=[("selected", ACCENT_BLUE)],
-                       foreground=[("selected", "#FFFFFF")])
+                       background=[("selected", "#2F323C")],
+                       foreground=[("selected", ACCENT_LIME)])
 
         # Scrollbar
-        self.style.configure("Vertical.TScrollbar", background=BG_CARD, troughcolor=BG_DARK)
+        self.style.configure("Vertical.TScrollbar", background=COLOR_CARD, troughcolor=COLOR_BG_APP, borderwidth=0)
 
     # =========================================================================
-    # HEADER BAR (IDENTITAS AKADEMIK MAHASISWA & DOSEN)
+    # SIDEBAR KIRI (SEPERTI GAMBAR: LOGO, PROFIL MAHASISWA, MENU, INFO DOSEN)
     # =========================================================================
-    def create_header(self):
-        header_frame = tk.Frame(self, bg=BG_HEADER, height=85, relief="flat")
-        header_frame.pack(side="top", fill="x")
+    def create_sidebar(self):
+        self.sidebar = tk.Frame(self, bg=COLOR_SIDEBAR, width=280)
+        self.sidebar.pack(side="left", fill="y")
+        self.sidebar.pack_propagate(False)
 
-        # Kontainer Kiri: Judul Mata Kuliah & Kasus
-        left_box = tk.Frame(header_frame, bg=BG_HEADER)
-        left_box.pack(side="left", padx=20, pady=12)
+        # 1. Logo / Branding Aplikasi (Gaya "Modly")
+        logo_box = tk.Frame(self.sidebar, bg=COLOR_SIDEBAR, padx=24, pady=24)
+        logo_box.pack(fill="x")
 
-        lbl_badge = tk.Label(left_box, text="UTS PRAKTEK MKP501 SISTEM CERDAS - SEMESTER 5",
-                             bg="#1E293B", fg="#60A5FA", font=("Segoe UI", 8, "bold"),
-                             padx=8, pady=2)
-        lbl_badge.pack(anchor="w", pady=(0, 3))
+        lbl_logo = tk.Label(logo_box, text="🌱 AgroFuzzy", bg=COLOR_SIDEBAR, fg=ACCENT_LIME,
+                            font=("Segoe UI", 16, "bold"))
+        lbl_logo.pack(anchor="w")
 
-        lbl_title = tk.Label(left_box, text="Sistem Cerdas Pengendalian Penyiraman Tanaman (Fuzzy Mamdani)",
-                             bg=BG_HEADER, fg=TEXT_MAIN, font=("Segoe UI", 14, "bold"))
-        lbl_title.pack(anchor="w")
+        lbl_sublogo = tk.Label(logo_box, text="Intelligent Sprinkler Control", bg=COLOR_SIDEBAR,
+                              fg=TEXT_MUTED, font=("Segoe UI", 8))
+        lbl_sublogo.pack(anchor="w", pady=(2, 0))
 
-        lbl_sub = tk.Label(left_box, text="Dosen Pengampu: Dr. E. Agung Nugroho, ST., MT  |  Metode: Triangular MF & Centroid",
-                           bg=BG_HEADER, fg=TEXT_MUTED, font=("Segoe UI", 9))
-        lbl_sub.pack(anchor="w")
+        # 2. User Profile Card (Esther Howard Style -> Teuku Azhar Pasha)
+        user_card = tk.Frame(self.sidebar, bg=COLOR_CARD, padx=14, pady=12,
+                             highlightbackground=COLOR_BORDER, highlightthickness=1)
+        user_card.pack(fill="x", padx=18, pady=(0, 20))
 
-        # Kontainer Kanan: Profil Mahasiswa
-        right_box = tk.Frame(header_frame, bg="#1F2430", highlightbackground=BORDER_COLOR, highlightthickness=1)
-        right_box.pack(side="right", padx=20, pady=12)
+        # Avatar Box (Inisial Elegan)
+        avatar_box = tk.Frame(user_card, bg="#1A1B20", width=42, height=42,
+                              highlightbackground=ACCENT_LIME, highlightthickness=1)
+        avatar_box.pack(side="left", padx=(0, 10))
+        avatar_box.pack_propagate(False)
+        lbl_avatar = tk.Label(avatar_box, text="TAP", bg="#1A1B20", fg=ACCENT_LIME,
+                              font=("Segoe UI", 10, "bold"))
+        lbl_avatar.pack(expand=True)
 
-        inner_box = tk.Frame(right_box, bg="#1F2430", padx=14, pady=6)
-        inner_box.pack()
+        user_info = tk.Frame(user_card, bg=COLOR_CARD)
+        user_info.pack(side="left", fill="x", expand=True)
 
-        lbl_mhs_title = tk.Label(inner_box, text="MAHASISWA (NIM GENAP)", bg="#1F2430", fg="#38BDF8", font=("Segoe UI", 8, "bold"))
-        lbl_mhs_title.pack(anchor="e")
+        lbl_nama = tk.Label(user_info, text="Teuku Azhar Pasha", bg=COLOR_CARD, fg=TEXT_WHITE,
+                            font=("Segoe UI", 10, "bold"))
+        lbl_nama.pack(anchor="w")
 
-        lbl_nama = tk.Label(inner_box, text="Teuku Azhar Pasha", bg="#1F2430", fg=TEXT_MAIN, font=("Segoe UI", 11, "bold"))
-        lbl_nama.pack(anchor="e")
+        lbl_nim = tk.Label(user_info, text="NIM: 202406036 (Genap)", bg=COLOR_CARD, fg=TEXT_MUTED,
+                           font=("Segoe UI", 8))
+        lbl_nim.pack(anchor="w")
 
-        lbl_nim = tk.Label(inner_box, text="NIM: 202406036  •  TRM - PEI", bg="#1F2430", fg=TEXT_MUTED, font=("Segoe UI", 9))
-        lbl_nim.pack(anchor="e")
+        lbl_prodi = tk.Label(user_info, text="TRM • Politeknik Enjinering Indorama", bg=COLOR_CARD,
+                             fg=ACCENT_LIME, font=("Segoe UI", 7, "bold"))
+        lbl_prodi.pack(anchor="w")
+
+        # 3. Navigasi Vertikal (Pill Menu)
+        self.nav_container = tk.Frame(self.sidebar, bg=COLOR_SIDEBAR, padx=14)
+        self.nav_container.pack(fill="x")
+
+        # 4. Info Dosen Pengampu & Mata Kuliah di Bawah Sidebar
+        bottom_box = tk.Frame(self.sidebar, bg=COLOR_CARD, padx=14, pady=14,
+                              highlightbackground=COLOR_BORDER, highlightthickness=1)
+        bottom_box.pack(side="bottom", fill="x", padx=18, pady=20)
+
+        lbl_dosen_tag = tk.Label(bottom_box, text="DOSEN PENGAMPU", bg=COLOR_CARD, fg=TEXT_MUTED,
+                                 font=("Segoe UI", 7, "bold"))
+        lbl_dosen_tag.pack(anchor="w")
+
+        lbl_dosen_name = tk.Label(bottom_box, text="Dr. E. Agung Nugroho, ST., MT", bg=COLOR_CARD,
+                                  fg=TEXT_WHITE, font=("Segoe UI", 9, "bold"))
+        lbl_dosen_name.pack(anchor="w", pady=(1, 4))
+
+        lbl_mk = tk.Label(bottom_box, text="MKP501 Sistem Cerdas • Sem 5", bg=COLOR_CARD,
+                          fg=ACCENT_LIME, font=("Segoe UI", 8))
+        lbl_mk.pack(anchor="w")
+
+    def register_nav_buttons(self):
+        menu_items = [
+            ("simulasi",  "⚡  Simulasi Real-Time"),
+            ("kurva_mf",  "📈  Kurva Membership"),
+            ("tabel_uji", "📋  Tabel 10 Pengujian"),
+            ("analisis",  "🧠  Rule Base & Analisis")
+        ]
+
+        for view_key, title in menu_items:
+            btn = tk.Button(self.nav_container, text=title, anchor="w", padx=16, pady=10,
+                            bg=COLOR_SIDEBAR, fg=TEXT_MUTED, font=("Segoe UI", 9, "bold"),
+                            relief="flat", activebackground=COLOR_CARD, activeforeground=TEXT_WHITE,
+                            cursor="hand2", bd=0, command=lambda k=view_key: self.switch_view(k))
+            btn.pack(fill="x", pady=3)
+            self.nav_buttons[view_key] = btn
+
+    def switch_view(self, target_key):
+        # Update styling tombol nav (Active state pill lime)
+        for k, btn in self.nav_buttons.items():
+            if k == target_key:
+                btn.configure(bg=COLOR_CARD, fg=ACCENT_LIME)
+            else:
+                btn.configure(bg=COLOR_SIDEBAR, fg=TEXT_MUTED)
+
+        # Ganti tampilan di content area
+        for frame in [self.view_simulasi, self.view_mf, self.view_tabel, self.view_analisis]:
+            frame.pack_forget()
+
+        if target_key == "simulasi":
+            self.lbl_page_title.configure(text="Simulasi & Monitoring Kendali")
+            self.lbl_page_subtitle.configure(text="Pengaturan parameter input suhu dan kelembapan secara interaktif")
+            self.view_simulasi.pack(fill="both", expand=True)
+            self.update_simulation_live()
+        elif target_key == "kurva_mf":
+            self.lbl_page_title.configure(text="Desain Fungsi Keanggotaan (Membership Functions)")
+            self.lbl_page_subtitle.configure(text="Visualisasi kurva segitiga untuk Suhu, Kelembapan Tanah, dan Durasi Penyiraman")
+            self.view_mf.pack(fill="both", expand=True)
+        elif target_key == "tabel_uji":
+            self.lbl_page_title.configure(text="Evaluasi 10 Skenario Pengujian")
+            self.lbl_page_subtitle.configure(text="5 data wajib dari lembar soal UTS + 5 data variasi kondisi transisi")
+            self.view_tabel.pack(fill="both", expand=True)
+        elif target_key == "analisis":
+            self.lbl_page_title.configure(text="Matriks 9 Rule Base & Jawaban Analisis UTS")
+            self.lbl_page_subtitle.configure(text="Logika inferensi mekatronika dan jawaban atas 4 pertanyaan evaluasi")
+            self.view_analisis.pack(fill="both", expand=True)
 
     # =========================================================================
-    # TAB INTERFACE (NOTEBOOK)
+    # MAIN CONTENT AREA (HEADER TOP BAR & CONTAINER)
     # =========================================================================
-    def create_tab_interface(self):
-        self.notebook = ttk.Notebook(self)
-        self.notebook.pack(fill="both", expand=True, padx=12, pady=(8, 0))
+    def create_main_content(self):
+        self.main_area = tk.Frame(self, bg=COLOR_BG_APP)
+        self.main_area.pack(side="right", fill="both", expand=True, padx=24, pady=20)
 
-        # Tab 1: Simulasi Interaktif & Visualisasi Centroid
-        self.tab_simulasi = tk.Frame(self.notebook, bg=BG_DARK)
-        self.notebook.add(self.tab_simulasi, text="  ⚡ 1. Simulasi Real-Time & Defuzzifikasi  ")
+        # Top Header Bar (Judul Halaman + Tombol Aksi Kanan seperti 'Upgrade' di gambar)
+        top_bar = tk.Frame(self.main_area, bg=COLOR_BG_APP)
+        top_bar.pack(fill="x", pady=(0, 16))
 
-        # Tab 2: Kurva Membership Function
-        self.tab_mf = tk.Frame(self.notebook, bg=BG_DARK)
-        self.notebook.add(self.tab_mf, text="  📈 2. Desain Kurva Membership Function  ")
+        title_box = tk.Frame(top_bar, bg=COLOR_BG_APP)
+        title_box.pack(side="left")
 
-        # Tab 3: Tabel 10 Pengujian
-        self.tab_tabel = tk.Frame(self.notebook, bg=BG_DARK)
-        self.notebook.add(self.tab_tabel, text="  📋 3. Tabel Pengujian 10 Skenario  ")
+        self.lbl_page_title = tk.Label(title_box, text="Simulasi & Monitoring Kendali", bg=COLOR_BG_APP,
+                                       fg=TEXT_WHITE, font=("Segoe UI", 16, "bold"))
+        self.lbl_page_title.pack(anchor="w")
 
-        # Tab 4: Rule Base & Analisis Soal UTS
-        self.tab_analisis = tk.Frame(self.notebook, bg=BG_DARK)
-        self.notebook.add(self.tab_analisis, text="  🧠 4. Rule Base & Analisis Hasil UTS  ")
+        self.lbl_page_subtitle = tk.Label(title_box, text="Pengaturan parameter input suhu dan kelembapan secara interaktif",
+                                          bg=COLOR_BG_APP, fg=TEXT_MUTED, font=("Segoe UI", 9))
+        self.lbl_page_subtitle.pack(anchor="w", pady=(2, 0))
 
-        # Bangun konten masing-masing tab
-        self.build_tab_simulasi()
-        self.build_tab_mf()
-        self.build_tab_tabel()
-        self.build_tab_analisis()
+        # Tombol Aksi Kanan (Pill Button Aksen Electric Lime)
+        action_box = tk.Frame(top_bar, bg=COLOR_BG_APP)
+        action_box.pack(side="right")
+
+        btn_save_plot = tk.Button(action_box, text="💾  Simpan Grafik", bg=ACCENT_LIME, fg=TEXT_DARK,
+                                  font=("Segoe UI", 9, "bold"), relief="flat", activebackground="#BCE62C",
+                                  cursor="hand2", padx=16, pady=6, bd=0, command=self.save_current_plot)
+        btn_save_plot.pack(side="right", padx=(8, 0))
+
+        btn_reset = tk.Button(action_box, text="🔄  Reset Default", bg=COLOR_CARD, fg=TEXT_WHITE,
+                              font=("Segoe UI", 9, "bold"), relief="flat", activebackground=COLOR_CARD_HOVER,
+                              cursor="hand2", padx=14, pady=6, bd=0, highlightbackground=COLOR_BORDER,
+                              highlightthickness=1, command=self.reset_default_values)
+        btn_reset.pack(side="right")
+
+        # Kontainer Halaman Dinamis
+        self.content_container = tk.Frame(self.main_area, bg=COLOR_BG_APP)
+        self.content_container.pack(fill="both", expand=True)
+
+        self.view_simulasi = tk.Frame(self.content_container, bg=COLOR_BG_APP)
+        self.view_mf = tk.Frame(self.content_container, bg=COLOR_BG_APP)
+        self.view_tabel = tk.Frame(self.content_container, bg=COLOR_BG_APP)
+        self.view_analisis = tk.Frame(self.content_container, bg=COLOR_BG_APP)
+
+        self.build_view_simulasi()
+        self.build_view_mf()
+        self.build_view_tabel()
+        self.build_view_analisis()
 
     # =========================================================================
-    # TAB 1: SIMULASI REAL-TIME & DEFUZZIFIKASI
+    # VIEW 1: SIMULASI REAL-TIME (CARD GRID LAYOUT SEPERTI GAMBAR REFERENSI)
     # =========================================================================
-    def build_tab_simulasi(self):
-        # Layout 2 Kolom (Kiri: Kontrol & Hasil, Kanan: Live Matplotlib Plot)
-        container = tk.Frame(self.tab_simulasi, bg=BG_DARK)
-        container.pack(fill="both", expand=True, padx=8, pady=8)
+    def build_view_simulasi(self):
+        # Grid 2 Kolom: Kiri (Kontrol Input & Status Angka Besar), Kanan (Live Plot & Log Rules)
+        col_left = tk.Frame(self.view_simulasi, bg=COLOR_BG_APP, width=380)
+        col_left.pack(side="left", fill="y", padx=(0, 14))
+        col_left.pack_propagate(False)
 
-        left_panel = tk.Frame(container, bg=BG_DARK, width=440)
-        left_panel.pack(side="left", fill="y", padx=(0, 8))
-        left_panel.pack_propagate(False)
+        col_right = tk.Frame(self.view_simulasi, bg=COLOR_BG_APP)
+        col_right.pack(side="right", fill="both", expand=True)
 
-        right_panel = tk.Frame(container, bg=BG_CARD, highlightbackground=BORDER_COLOR, highlightthickness=1)
-        right_panel.pack(side="right", fill="both", expand=True)
+        # ----------------- KOLOM KIRI -----------------
+        # CARD 1: KONTROL PARAMETER INPUT (DUAL INPUT SLIDER + ENTRY)
+        card_input = tk.Frame(col_left, bg=COLOR_CARD, padx=18, pady=18,
+                              highlightbackground=COLOR_BORDER, highlightthickness=1)
+        card_input.pack(fill="x", pady=(0, 14))
 
-        # ----------------- PANEL KIRI -----------------
-        # 1. Card Input Parameter (Dual Input: Slider + TextBox)
-        card_input = tk.Frame(left_panel, bg=BG_CARD, padx=14, pady=12, highlightbackground=BORDER_COLOR, highlightthickness=1)
-        card_input.pack(fill="x", pady=(0, 10))
+        lbl_ci_head = tk.Label(card_input, text="Kontrol Parameter Input", bg=COLOR_CARD, fg=TEXT_WHITE,
+                               font=("Segoe UI", 11, "bold"))
+        lbl_ci_head.pack(anchor="w", pady=(0, 14))
 
-        lbl_c_title = tk.Label(card_input, text="KONTROL PARAMETER INPUT", bg=BG_CARD, fg="#60A5FA", font=("Segoe UI", 10, "bold"))
-        lbl_c_title.pack(anchor="w", pady=(0, 8))
+        # --- A. Suhu Udara ---
+        lbl_s_tag = tk.Label(card_input, text="Suhu Lingkungan (°C)", bg=COLOR_CARD, fg=TEXT_MUTED,
+                             font=("Segoe UI", 9, "bold"))
+        lbl_s_tag.pack(anchor="w")
 
-        # --- A. Input Suhu Udara ---
-        lbl_s_hdr = tk.Label(card_input, text="🌡️ Suhu Udara Lingkungan (0 - 40 °C):", bg=BG_CARD, fg=TEXT_MAIN, font=("Segoe UI", 9, "bold"))
-        lbl_s_hdr.pack(anchor="w")
+        row_s = tk.Frame(card_input, bg=COLOR_CARD)
+        row_s.pack(fill="x", pady=(6, 2))
 
-        row_suhu = tk.Frame(card_input, bg=BG_CARD)
-        row_suhu.pack(fill="x", pady=(3, 2))
-
-        self.scale_suhu = tk.Scale(row_suhu, from_=0.0, to=40.0, resolution=0.5, orient="horizontal",
-                                   variable=self.var_suhu, bg=BG_CARD, fg=TEXT_MUTED, troughcolor=BG_INPUT,
-                                   activebackground=ACCENT_BLUE, highlightthickness=0, showvalue=False,
+        self.scale_suhu = tk.Scale(row_s, from_=0.0, to=40.0, resolution=0.5, orient="horizontal",
+                                   variable=self.var_suhu, bg=COLOR_CARD, fg=TEXT_MUTED, troughcolor=COLOR_INPUT_BOX,
+                                   activebackground=ACCENT_LIME, highlightthickness=0, bd=0, showvalue=False,
                                    command=self.on_slider_suhu_change)
-        self.scale_suhu.pack(side="left", fill="x", expand=True, padx=(0, 8))
+        self.scale_suhu.pack(side="left", fill="x", expand=True, padx=(0, 10))
 
-        entry_box_suhu = tk.Frame(row_suhu, bg=BG_INPUT, highlightbackground=BORDER_COLOR, highlightthickness=1, padx=4, pady=2)
-        entry_box_suhu.pack(side="right")
-        self.entry_suhu = tk.Entry(entry_box_suhu, textvariable=self.var_suhu_text, width=6, bg=BG_INPUT, fg=ACCENT_CYAN,
-                                   font=("Segoe UI", 10, "bold"), bd=0, justify="center", insertbackground=TEXT_MAIN)
+        # Text Box Entry Suhu
+        box_entry_s = tk.Frame(row_s, bg=COLOR_INPUT_BOX, highlightbackground=COLOR_BORDER, highlightthickness=1, padx=6, pady=3)
+        box_entry_s.pack(side="right")
+        self.entry_suhu = tk.Entry(box_entry_s, textvariable=self.var_suhu_text, width=5, bg=COLOR_INPUT_BOX,
+                                   fg=ACCENT_LIME, font=("Segoe UI", 10, "bold"), bd=0, justify="center",
+                                   insertbackground=TEXT_WHITE)
         self.entry_suhu.pack(side="left")
-        lbl_unit_s = tk.Label(entry_box_suhu, text="°C", bg=BG_INPUT, fg=TEXT_MUTED, font=("Segoe UI", 8))
+        lbl_unit_s = tk.Label(box_entry_s, text="°C", bg=COLOR_INPUT_BOX, fg=TEXT_MUTED, font=("Segoe UI", 8))
         lbl_unit_s.pack(side="right", padx=(2, 0))
         self.entry_suhu.bind("<Return>", self.on_entry_suhu_confirm)
         self.entry_suhu.bind("<FocusOut>", self.on_entry_suhu_confirm)
 
-        # Derajat Suhu & Status Clamping
-        self.lbl_mu_suhu = tk.Label(card_input, text="Dingin: 0.00 | Normal: 1.00 | Panas: 0.00", bg=BG_CARD, fg=TEXT_MUTED, font=("Consolas", 8))
-        self.lbl_mu_suhu.pack(anchor="w", pady=(1, 2))
+        # Status & Derajat Suhu
+        self.lbl_mu_suhu = tk.Label(card_input, text="Dingin: 0.00 | Normal: 1.00 | Panas: 0.00", bg=COLOR_CARD,
+                                    fg=TEXT_MUTED, font=("Consolas", 8))
+        self.lbl_mu_suhu.pack(anchor="w", pady=(2, 0))
 
-        self.lbl_warn_suhu = tk.Label(card_input, textvariable=self.status_suhu_warning, bg=BG_CARD, fg="#10B981", font=("Segoe UI", 7))
-        self.lbl_warn_suhu.pack(anchor="w", pady=(0, 8))
+        self.lbl_warn_suhu = tk.Label(card_input, textvariable=self.status_suhu_clamp, bg=COLOR_CARD,
+                                      fg=ACCENT_LIME, font=("Segoe UI", 7))
+        self.lbl_warn_suhu.pack(anchor="w", pady=(0, 12))
 
-        # --- B. Input Kelembapan Tanah ---
-        lbl_k_hdr = tk.Label(card_input, text="💧 Kelembapan Tanah (0 - 100 %):", bg=BG_CARD, fg=TEXT_MAIN, font=("Segoe UI", 9, "bold"))
-        lbl_k_hdr.pack(anchor="w")
+        # --- B. Kelembapan Tanah ---
+        lbl_k_tag = tk.Label(card_input, text="Kelembapan Tanah (%)", bg=COLOR_CARD, fg=TEXT_MUTED,
+                             font=("Segoe UI", 9, "bold"))
+        lbl_k_tag.pack(anchor="w")
 
-        row_kel = tk.Frame(card_input, bg=BG_CARD)
-        row_kel.pack(fill="x", pady=(3, 2))
+        row_k = tk.Frame(card_input, bg=COLOR_CARD)
+        row_k.pack(fill="x", pady=(6, 2))
 
-        self.scale_kel = tk.Scale(row_kel, from_=0.0, to=100.0, resolution=1.0, orient="horizontal",
-                                  variable=self.var_kelembapan, bg=BG_CARD, fg=TEXT_MUTED, troughcolor=BG_INPUT,
-                                  activebackground=ACCENT_BLUE, highlightthickness=0, showvalue=False,
+        self.scale_kel = tk.Scale(row_k, from_=0.0, to=100.0, resolution=1.0, orient="horizontal",
+                                  variable=self.var_kelembapan, bg=COLOR_CARD, fg=TEXT_MUTED, troughcolor=COLOR_INPUT_BOX,
+                                  activebackground=ACCENT_LIME, highlightthickness=0, bd=0, showvalue=False,
                                   command=self.on_slider_kel_change)
-        self.scale_kel.pack(side="left", fill="x", expand=True, padx=(0, 8))
+        self.scale_kel.pack(side="left", fill="x", expand=True, padx=(0, 10))
 
-        entry_box_kel = tk.Frame(row_kel, bg=BG_INPUT, highlightbackground=BORDER_COLOR, highlightthickness=1, padx=4, pady=2)
-        entry_box_kel.pack(side="right")
-        self.entry_kel = tk.Entry(entry_box_kel, textvariable=self.var_kelembapan_text, width=6, bg=BG_INPUT, fg=ACCENT_CYAN,
-                                  font=("Segoe UI", 10, "bold"), bd=0, justify="center", insertbackground=TEXT_MAIN)
+        # Text Box Entry Kelembapan
+        box_entry_k = tk.Frame(row_k, bg=COLOR_INPUT_BOX, highlightbackground=COLOR_BORDER, highlightthickness=1, padx=6, pady=3)
+        box_entry_k.pack(side="right")
+        self.entry_kel = tk.Entry(box_entry_k, textvariable=self.var_kelembapan_text, width=5, bg=COLOR_INPUT_BOX,
+                                  fg=ACCENT_LIME, font=("Segoe UI", 10, "bold"), bd=0, justify="center",
+                                  insertbackground=TEXT_WHITE)
         self.entry_kel.pack(side="left")
-        lbl_unit_k = tk.Label(entry_box_kel, text="%", bg=BG_INPUT, fg=TEXT_MUTED, font=("Segoe UI", 8))
+        lbl_unit_k = tk.Label(box_entry_k, text="%", bg=COLOR_INPUT_BOX, fg=TEXT_MUTED, font=("Segoe UI", 8))
         lbl_unit_k.pack(side="right", padx=(2, 0))
         self.entry_kel.bind("<Return>", self.on_entry_kel_confirm)
         self.entry_kel.bind("<FocusOut>", self.on_entry_kel_confirm)
 
-        # Derajat Kelembapan & Status Clamping
-        self.lbl_mu_kel = tk.Label(card_input, text="Kering: 0.00 | Normal: 1.00 | Lembap: 0.00", bg=BG_CARD, fg=TEXT_MUTED, font=("Consolas", 8))
-        self.lbl_mu_kel.pack(anchor="w", pady=(1, 2))
+        # Status & Derajat Kelembapan
+        self.lbl_mu_kel = tk.Label(card_input, text="Kering: 0.00 | Normal: 1.00 | Lembap: 0.00", bg=COLOR_CARD,
+                                   fg=TEXT_MUTED, font=("Consolas", 8))
+        self.lbl_mu_kel.pack(anchor="w", pady=(2, 0))
 
-        self.lbl_warn_kel = tk.Label(card_input, textvariable=self.status_kelembapan_warning, bg=BG_CARD, fg="#10B981", font=("Segoe UI", 7))
-        self.lbl_warn_kel.pack(anchor="w", pady=(0, 8))
+        self.lbl_warn_kel = tk.Label(card_input, textvariable=self.status_kel_clamp, bg=COLOR_CARD,
+                                     fg=ACCENT_LIME, font=("Segoe UI", 7))
+        self.lbl_warn_kel.pack(anchor="w", pady=(0, 2))
 
-        # Tombol Aksi Input
-        btn_row = tk.Frame(card_input, bg=BG_CARD)
-        btn_row.pack(fill="x", pady=(2, 0))
+        # CARD 2: HASIL REKOMENDASI DURASI (SEPERTI CARD SKOR BESAR PADA GAMBAR REFERENSI)
+        card_output = tk.Frame(col_left, bg=COLOR_CARD, padx=20, pady=20,
+                               highlightbackground=COLOR_BORDER, highlightthickness=1)
+        card_output.pack(fill="x", pady=(0, 14))
 
-        btn_reset = tk.Button(btn_row, text="🔄 Reset Nilai", bg="#334155", fg=TEXT_MAIN, font=("Segoe UI", 8, "bold"),
-                              relief="flat", activebackground="#475569", activeforeground="#FFFFFF", cursor="hand2",
-                              command=self.reset_default_values, padx=10, pady=4)
-        btn_reset.pack(side="left", fill="x", expand=True, padx=(0, 4))
+        lbl_out_head = tk.Label(card_output, text="Rekomendasi Durasi", bg=COLOR_CARD, fg=TEXT_MUTED,
+                                font=("Segoe UI", 9, "bold"))
+        lbl_out_head.pack(anchor="w")
 
-        btn_save_plot = tk.Button(btn_row, text="💾 Simpan Grafik PNG", bg="#1E3A8A", fg="#93C5FD", font=("Segoe UI", 8, "bold"),
-                                  relief="flat", activebackground="#1D4ED8", activeforeground="#FFFFFF", cursor="hand2",
-                                  command=self.save_current_plot, padx=10, pady=4)
-        btn_save_plot.pack(side="right", fill="x", expand=True, padx=(4, 0))
+        # Angka Raksasa (Modly Big Score Style)
+        out_row = tk.Frame(card_output, bg=COLOR_CARD)
+        out_row.pack(anchor="w", pady=(6, 4))
 
-        # 2. Card Hasil Output Rekomendasi
-        card_output = tk.Frame(left_panel, bg=BG_CARD, padx=14, pady=12, highlightbackground=BORDER_COLOR, highlightthickness=1)
-        card_output.pack(fill="x", pady=(0, 10))
+        self.lbl_durasi_num = tk.Label(out_row, text="15.00", bg=COLOR_CARD, fg=ACCENT_LIME,
+                                       font=("Segoe UI", 32, "bold"))
+        self.lbl_durasi_num.pack(side="left")
 
-        lbl_o_title = tk.Label(card_output, text="HASIL REKOMENDASI SISTEM", bg=BG_CARD, fg="#34D399", font=("Segoe UI", 10, "bold"))
-        lbl_o_title.pack(anchor="w", pady=(0, 6))
+        lbl_unit_dur = tk.Label(out_row, text="menit", bg=COLOR_CARD, fg=TEXT_MUTED,
+                                font=("Segoe UI", 12))
+        lbl_unit_dur.pack(side="left", padx=(6, 0), pady=(12, 0))
 
-        # Kotak Durasi Besar
-        box_durasi = tk.Frame(card_output, bg="#132E27", highlightbackground="#059669", highlightthickness=1, pady=8)
-        box_durasi.pack(fill="x", pady=(0, 6))
+        # Pill Status Kategori
+        self.lbl_kategori_pill = tk.Label(card_output, text="SEDANG (8 – 22 Menit)", bg="#2B3024",
+                                          fg=ACCENT_LIME, font=("Segoe UI", 8, "bold"), padx=10, pady=4)
+        self.lbl_kategori_pill.pack(anchor="w", pady=(4, 6))
 
-        lbl_d_tag = tk.Label(box_durasi, text="DURASI PENYIRAMAN REKOMENDASI", bg="#132E27", fg="#6EE7B7", font=("Segoe UI", 8, "bold"))
-        lbl_d_tag.pack()
+        lbl_aktuator_status = tk.Label(card_output, text="Status Pompa: Katup Otomatis Terbuka", bg=COLOR_CARD,
+                                       fg=TEXT_MUTED, font=("Segoe UI", 8))
+        lbl_aktuator_status.pack(anchor="w")
 
-        self.lbl_durasi_val = tk.Label(box_durasi, text="15.00 MENIT", bg="#132E27", fg="#A7F3D0", font=("Segoe UI", 22, "bold"))
-        self.lbl_durasi_val.pack()
+        # ----------------- KOLOM KANAN -----------------
+        # CARD 3: EMBEDDED MATPLOTLIB CANVAS (LIVE DEFUZZIFIKASI PLOT)
+        card_plot = tk.Frame(col_right, bg=COLOR_CARD, padx=14, pady=14,
+                             highlightbackground=COLOR_BORDER, highlightthickness=1)
+        card_plot.pack(fill="both", expand=True, pady=(0, 14))
 
-        self.lbl_kategori_out = tk.Label(box_durasi, text="Kategori: SEDANG (8 - 22 Menit)", bg="#132E27", fg="#34D399", font=("Segoe UI", 9))
-        self.lbl_kategori_out.pack()
+        lbl_cp_head = tk.Label(card_plot, text="Visualisasi Inferensi Mamdani & Posisi Centroid",
+                               bg=COLOR_CARD, fg=TEXT_WHITE, font=("Segoe UI", 11, "bold"))
+        lbl_cp_head.pack(anchor="w", pady=(0, 8))
 
-        # 3. Card Log Rule Aktif
-        card_log = tk.Frame(left_panel, bg=BG_CARD, padx=14, pady=10, highlightbackground=BORDER_COLOR, highlightthickness=1)
-        card_log.pack(fill="both", expand=True)
+        # Figure Matplotlib Stylized Matte
+        self.fig_sim = Figure(figsize=(6.8, 3.8), dpi=100, facecolor=COLOR_CARD)
+        self.ax_sim = self.fig_sim.add_subplot(111)
+        self.ax_sim.set_facecolor("#1A1B20")
 
-        lbl_l_title = tk.Label(card_log, text="ATURAN AKTIF (FIRING STRENGTH α > 0)", bg=BG_CARD, fg=TEXT_MUTED, font=("Segoe UI", 9, "bold"))
-        lbl_l_title.pack(anchor="w", pady=(0, 4))
+        self.canvas_sim = FigureCanvasTkAgg(self.fig_sim, master=card_plot)
+        self.canvas_sim.get_tk_widget().pack(fill="both", expand=True)
 
-        self.txt_rules = tk.Text(card_log, bg=BG_INPUT, fg=TEXT_MAIN, font=("Consolas", 8), bd=0, height=8,
-                                 highlightbackground=BORDER_COLOR, highlightthickness=1, wrap="word")
-        self.txt_rules.pack(fill="both", expand=True)
+        # CARD 4: LOG ATURAN YANG AKTIF
+        card_log = tk.Frame(col_right, bg=COLOR_CARD, padx=16, pady=12,
+                            highlightbackground=COLOR_BORDER, highlightthickness=1)
+        card_log.pack(fill="x")
 
-        # ----------------- PANEL KANAN (CANVAS MATPLOTLIB) -----------------
-        self.fig_simulasi = Figure(figsize=(7, 5.2), dpi=100, facecolor=BG_CARD)
-        self.ax_simulasi = self.fig_simulasi.add_subplot(111)
-        self.ax_simulasi.set_facecolor(PLOT_BG)
+        lbl_log_head = tk.Label(card_log, text="Aturan Aktif Saat Ini (Firing Strength α > 0)",
+                                bg=COLOR_CARD, fg=TEXT_MUTED, font=("Segoe UI", 9, "bold"))
+        lbl_log_head.pack(anchor="w", pady=(0, 4))
 
-        self.canvas_simulasi = FigureCanvasTkAgg(self.fig_simulasi, master=right_panel)
-        self.canvas_simulasi.get_tk_widget().pack(fill="both", expand=True, padx=6, pady=6)
+        self.txt_rules = tk.Text(card_log, bg=COLOR_INPUT_BOX, fg=TEXT_WHITE, font=("Consolas", 8),
+                                 bd=0, height=4, highlightbackground=COLOR_BORDER, highlightthickness=1, wrap="word")
+        self.txt_rules.pack(fill="x")
 
     # =========================================================================
-    # EVENT HANDLERS SINKRONISASI DUA ARAH (TWO-WAY BINDING)
+    # TWO-WAY BINDING & REACTION HANDLERS
     # =========================================================================
     def on_slider_suhu_change(self, val):
-        if self._updating_from_entry:
-            return
-        self._updating_from_slider = True
+        if self._sync_lock: return
+        self._sync_lock = True
         try:
             val_f = float(val)
             self.var_suhu_text.set(f"{val_f:.1f}")
-            self.status_suhu_warning.set("Dalam Rentang Normal [0 - 40 °C]")
-            self.lbl_warn_suhu.configure(fg="#10B981")
+            self.status_suhu_clamp.set("Rentang Normal (0 – 40 °C)")
+            self.lbl_warn_suhu.configure(fg=ACCENT_LIME)
             self.update_simulation_live()
         finally:
-            self._updating_from_slider = False
+            self._sync_lock = False
 
     def on_slider_kel_change(self, val):
-        if self._updating_from_entry:
-            return
-        self._updating_from_slider = True
+        if self._sync_lock: return
+        self._sync_lock = True
         try:
             val_f = float(val)
             self.var_kelembapan_text.set(f"{val_f:.1f}")
-            self.status_kelembapan_warning.set("Dalam Rentang Normal [0 - 100 %]")
-            self.lbl_warn_kel.configure(fg="#10B981")
+            self.status_kel_clamp.set("Rentang Normal (0 – 100 %)")
+            self.lbl_warn_kel.configure(fg=ACCENT_LIME)
             self.update_simulation_live()
         finally:
-            self._updating_from_slider = False
+            self._sync_lock = False
 
     def on_entry_suhu_confirm(self, event=None):
-        if self._updating_from_slider:
-            return
-        self._updating_from_entry = True
-        raw_str = self.var_suhu_text.get().strip()
+        if self._sync_lock: return
+        self._sync_lock = True
         try:
-            val = float(raw_str)
-            # Analisis saturasi / clamping
+            val = float(self.var_suhu_text.get().strip())
+            # Safety clamping check
             if val < 0.0:
-                self.status_suhu_warning.set(f"⚠️ Nilai {val}°C < 0, disaturasi ke 0.0 °C (Safety Clamp)")
+                self.status_suhu_clamp.set(f"⚠️ {val}°C < 0, disaturasi ke 0.0 °C")
                 self.lbl_warn_suhu.configure(fg=ACCENT_AMBER)
                 val = 0.0
             elif val > 40.0:
-                self.status_suhu_warning.set(f"⚠️ Nilai {val}°C > 40, disaturasi ke 40.0 °C (Safety Clamp)")
+                self.status_suhu_clamp.set(f"⚠️ {val}°C > 40, disaturasi ke 40.0 °C")
                 self.lbl_warn_suhu.configure(fg=ACCENT_AMBER)
                 val = 40.0
             else:
-                self.status_suhu_warning.set("Dalam Rentang Normal [0 - 40 °C]")
-                self.lbl_warn_suhu.configure(fg="#10B981")
+                self.status_suhu_clamp.set("Rentang Normal (0 – 40 °C)")
+                self.lbl_warn_suhu.configure(fg=ACCENT_LIME)
 
             self.var_suhu.set(val)
             self.var_suhu_text.set(f"{val:.1f}")
             self.update_simulation_live()
         except ValueError:
-            messagebox.showwarning("Input Tidak Valid", "Harap masukkan nilai angka numerik untuk Suhu Udara!")
+            messagebox.showwarning("Input Error", "Harap masukkan angka numerik yang valid untuk Suhu!")
             self.var_suhu_text.set(f"{self.var_suhu.get():.1f}")
         finally:
-            self._updating_from_entry = False
+            self._sync_lock = False
 
     def on_entry_kel_confirm(self, event=None):
-        if self._updating_from_slider:
-            return
-        self._updating_from_entry = True
-        raw_str = self.var_kelembapan_text.get().strip()
+        if self._sync_lock: return
+        self._sync_lock = True
         try:
-            val = float(raw_str)
-            # Analisis saturasi / clamping
+            val = float(self.var_kelembapan_text.get().strip())
+            # Safety clamping check
             if val < 0.0:
-                self.status_kelembapan_warning.set(f"⚠️ Nilai {val}% < 0, disaturasi ke 0.0 % (Safety Clamp)")
+                self.status_kel_clamp.set(f"⚠️ {val}% < 0, disaturasi ke 0.0 %")
                 self.lbl_warn_kel.configure(fg=ACCENT_AMBER)
                 val = 0.0
             elif val > 100.0:
-                self.status_kelembapan_warning.set(f"⚠️ Nilai {val}% > 100, disaturasi ke 100.0 % (Safety Clamp)")
+                self.status_kel_clamp.set(f"⚠️ {val}% > 100, disaturasi ke 100.0 %")
                 self.lbl_warn_kel.configure(fg=ACCENT_AMBER)
                 val = 100.0
             else:
-                self.status_kelembapan_warning.set("Dalam Rentang Normal [0 - 100 %]")
-                self.lbl_warn_kel.configure(fg="#10B981")
+                self.status_kel_clamp.set("Rentang Normal (0 – 100 %)")
+                self.lbl_warn_kel.configure(fg=ACCENT_LIME)
 
             self.var_kelembapan.set(val)
             self.var_kelembapan_text.set(f"{val:.1f}")
             self.update_simulation_live()
         except ValueError:
-            messagebox.showwarning("Input Tidak Valid", "Harap masukkan nilai angka numerik untuk Kelembapan Tanah!")
+            messagebox.showwarning("Input Error", "Harap masukkan angka numerik yang valid untuk Kelembapan!")
             self.var_kelembapan_text.set(f"{self.var_kelembapan.get():.1f}")
         finally:
-            self._updating_from_entry = False
+            self._sync_lock = False
 
     def reset_default_values(self):
         self.var_suhu.set(25.0)
         self.var_kelembapan.set(50.0)
         self.var_suhu_text.set("25.0")
         self.var_kelembapan_text.set("50.0")
-        self.status_suhu_warning.set("Dalam Rentang Normal [0 - 40 °C]")
-        self.status_kelembapan_warning.set("Dalam Rentang Normal [0 - 100 %]")
-        self.lbl_warn_suhu.configure(fg="#10B981")
-        self.lbl_warn_kel.configure(fg="#10B981")
+        self.status_suhu_clamp.set("Rentang Normal (0 – 40 °C)")
+        self.status_kel_clamp.set("Rentang Normal (0 – 100 %)")
+        self.lbl_warn_suhu.configure(fg=ACCENT_LIME)
+        self.lbl_warn_kel.configure(fg=ACCENT_LIME)
         self.update_simulation_live()
 
     # =========================================================================
-    # LOGIKA UPDATE SIMULASI & EMBEDDED PLOT
+    # RENDER LIVE SIMULASI MATPLOTLIB PLOT
     # =========================================================================
     def update_simulation_live(self):
         suhu = self.var_suhu.get()
@@ -415,369 +529,324 @@ class FuzzySprinklerGUI(tk.Tk):
         res = self.fuzzy_engine.compute(suhu, kelembapan)
         durasi = res['hasil_defuzzifikasi']
 
-        # Update Teks Fuzzifikasi
+        # Update Derajat Fuzzifikasi
         mu_s = res['fuzzifikasi']['suhu']
         self.lbl_mu_suhu.configure(text=f"Dingin: {mu_s['dingin']:.2f} | Normal: {mu_s['normal']:.2f} | Panas: {mu_s['panas']:.2f}")
 
         mu_k = res['fuzzifikasi']['kelembapan']
         self.lbl_mu_kel.configure(text=f"Kering: {mu_k['kering']:.2f} | Normal: {mu_k['normal']:.2f} | Lembap: {mu_k['lembap']:.2f}")
 
-        # Update Durasi & Kategori
-        self.lbl_durasi_val.configure(text=f"{durasi:.2f} MENIT")
+        # Update Angka Skor Besar
+        self.lbl_durasi_num.configure(text=f"{durasi:.2f}")
         if durasi <= 10.0:
-            kat = "Kategori: SINGKAT (0 - 12 Menit)"
+            self.lbl_kategori_pill.configure(text="SINGKAT (0 – 12 Menit)")
         elif durasi <= 20.0:
-            kat = "Kategori: SEDANG (8 - 22 Menit)"
+            self.lbl_kategori_pill.configure(text="SEDANG (8 – 22 Menit)")
         else:
-            kat = "Kategori: LAMA (18 - 30 Menit)"
-        self.lbl_kategori_out.configure(text=kat)
+            self.lbl_kategori_pill.configure(text="LAMA (18 – 30 Menit)")
 
-        # Update Text Rules
+        # Update List Aturan
         self.txt_rules.delete("1.0", tk.END)
-        active_found = False
+        found = False
         for r in res['rule_evaluations']:
             if r['alpha'] > 0:
-                active_found = True
+                found = True
                 rule_tag = r['description'].split(':')[0]
-                self.txt_rules.insert(tk.END, f"• {rule_tag}: α={r['alpha']:.3f} -> {r['output_label'].upper()}\n")
-                self.txt_rules.insert(tk.END, f"  {r['description'].split(': ')[1]}\n")
-        if not active_found:
-            self.txt_rules.insert(tk.END, "• Tidak ada aturan yang aktif (Fallback)\n")
+                self.txt_rules.insert(tk.END, f"• {rule_tag}: α = {r['alpha']:.3f} -> Output: {r['output_label'].upper()} | {r['description'].split(': ')[1]}\n")
+        if not found:
+            self.txt_rules.insert(tk.END, "• Tidak ada aturan aktif (Fallback aman)\n")
 
-        # Render Ulang Matplotlib Plot
-        self.render_simulasi_plot(res, suhu, kelembapan)
-
-    def render_simulasi_plot(self, res, suhu, kelembapan):
-        self.ax_simulasi.clear()
-
+        # Render Canvas Plot
+        self.ax_sim.clear()
         x = res['durasi_range']
         agg = res['aggregated']
-        centroid = res['hasil_defuzzifikasi']
 
-        # Plot garis referensi tipis
-        self.ax_simulasi.plot(x, res['mf_durasi_curves']['singkat'], color='#38BDF8', linestyle=':', linewidth=1.2, alpha=0.45, label='Singkat [0, 0, 12]')
-        self.ax_simulasi.plot(x, res['mf_durasi_curves']['sedang'], color='#FBBF24', linestyle=':', linewidth=1.2, alpha=0.45, label='Sedang [8, 15, 22]')
-        self.ax_simulasi.plot(x, res['mf_durasi_curves']['lama'], color='#F87171', linestyle=':', linewidth=1.2, alpha=0.45, label='Lama [18, 30, 30]')
+        # Garis referensi halus
+        self.ax_sim.plot(x, res['mf_durasi_curves']['singkat'], color='#5A5E6B', linestyle='--', linewidth=1.0, alpha=0.5, label='Singkat')
+        self.ax_sim.plot(x, res['mf_durasi_curves']['sedang'], color=ACCENT_PURPLE, linestyle='--', linewidth=1.0, alpha=0.5, label='Sedang')
+        self.ax_sim.plot(x, res['mf_durasi_curves']['lama'], color=ACCENT_ROSE, linestyle='--', linewidth=1.0, alpha=0.5, label='Lama')
 
-        # Arsiran Area Agregasi MAX (Warna oranye hangat lembut)
-        self.ax_simulasi.fill_between(x, 0, agg, facecolor='#F59E0B', alpha=0.45, label='Area Agregasi (MAX)')
-        self.ax_simulasi.plot(x, agg, color='#D97706', linewidth=2.0)
+        # Area Agregasi (Arsiran Abu-abu Gelap / Dark Charcoal)
+        self.ax_sim.fill_between(x, 0, agg, facecolor="#353945", alpha=0.8, label='Agregasi Area (MAX)')
+        self.ax_sim.plot(x, agg, color="#7B8092", linewidth=1.8)
 
-        # Garis Centroid Merah Tegas
-        self.ax_simulasi.axvline(x=centroid, color='#EF4444', linestyle='-', linewidth=2.5,
-                                 label=f'Centroid: {centroid:.2f} menit')
+        # Garis Centroid Berpendar (Electric Lime Accent)
+        self.ax_sim.axvline(x=durasi, color=ACCENT_LIME, linestyle='-', linewidth=2.5,
+                            label=f'Centroid: {durasi:.2f} m')
 
-        # Titik Centroid Marker
-        idx_c = np.abs(x - centroid).argmin()
-        c_height = agg[idx_c]
-        self.ax_simulasi.scatter([centroid], [c_height], color='#B91C1C', s=75, zorder=6)
+        idx_c = np.abs(x - durasi).argmin()
+        self.ax_sim.scatter([durasi], [agg[idx_c]], color=ACCENT_LIME, s=80, zorder=6, edgecolors=COLOR_CARD, linewidth=1.5)
 
-        # Styling Axis & Grid untuk Tema Slate
-        self.ax_simulasi.set_title(f"Implikasi, Agregasi (MAX) & Defuzzifikasi Centroid  |  Suhu={suhu:.1f}°C, Kelembapan={kelembapan:.1f}%",
-                                   color=TEXT_MAIN, fontsize=10, fontweight='bold', pad=10)
-        self.ax_simulasi.set_xlabel("Durasi Penyiraman (Menit)", color=TEXT_MUTED, fontsize=9)
-        self.ax_simulasi.set_ylabel("Derajat Keanggotaan (μ)", color=TEXT_MUTED, fontsize=9)
-        self.ax_simulasi.set_xlim(0, 30)
-        self.ax_simulasi.set_ylim(-0.05, 1.05)
+        # Styling Plot Sesuai Palet
+        self.ax_sim.set_title(f"Durasi Centroid = {durasi:.2f} menit  (Suhu: {suhu:.1f}°C, Kelembapan: {kelembapan:.1f}%)",
+                              color=TEXT_WHITE, fontsize=9, fontweight='bold', pad=8)
+        self.ax_sim.set_xlabel("Durasi Penyiraman (Menit)", color=TEXT_MUTED, fontsize=8)
+        self.ax_sim.set_ylabel("Derajat Keanggotaan (μ)", color=TEXT_MUTED, fontsize=8)
+        self.ax_sim.set_xlim(0, 30)
+        self.ax_sim.set_ylim(-0.05, 1.05)
 
-        self.ax_simulasi.tick_params(colors=TEXT_MUTED, labelsize=8)
-        for spine in self.ax_simulasi.spines.values():
-            spine.set_color(BORDER_COLOR)
+        self.ax_sim.tick_params(colors=TEXT_MUTED, labelsize=8)
+        for spine in self.ax_sim.spines.values():
+            spine.set_color(COLOR_BORDER)
 
-        self.ax_simulasi.grid(True, linestyle='--', color='#334155', alpha=0.55)
-        self.ax_simulasi.legend(loc='upper right', facecolor=BG_CARD, edgecolor=BORDER_COLOR,
-                                labelcolor=TEXT_MAIN, fontsize=8, framealpha=0.9)
+        self.ax_sim.grid(True, linestyle=':', color="#2E313A", alpha=0.6)
+        self.ax_sim.legend(loc='upper right', facecolor=COLOR_CARD, edgecolor=COLOR_BORDER,
+                           labelcolor=TEXT_WHITE, fontsize=7, framealpha=0.95)
 
-        self.fig_simulasi.tight_layout()
-        self.canvas_simulasi.draw()
+        self.fig_sim.tight_layout()
+        self.canvas_sim.draw()
 
     def save_current_plot(self):
         fpath = filedialog.asksaveasfilename(defaultextension=".png",
                                              filetypes=[("PNG Image", "*.png"), ("All Files", "*.*")],
-                                             initialfile=f"defuzzifikasi_suhu_{int(self.var_suhu.get())}_kel_{int(self.var_kelembapan.get())}.png")
+                                             initialfile=f"centroid_suhu_{int(self.var_suhu.get())}_kel_{int(self.var_kelembapan.get())}.png")
         if fpath:
-            self.fig_simulasi.savefig(fpath, dpi=300, facecolor=BG_CARD)
-            messagebox.showinfo("Berhasil Disimpan", f"Grafik defuzzifikasi berhasil disimpan ke:\n{fpath}")
+            self.fig_sim.savefig(fpath, dpi=300, facecolor=COLOR_CARD)
+            messagebox.showinfo("Tersimpan", f"Grafik defuzzifikasi berhasil disimpan ke:\n{fpath}")
 
     # =========================================================================
-    # TAB 2: DESAIN KURVA MEMBERSHIP FUNCTION
+    # VIEW 2: KURVA MEMBERSHIP FUNCTION
     # =========================================================================
-    def build_tab_mf(self):
-        frame = tk.Frame(self.tab_mf, bg=BG_CARD, highlightbackground=BORDER_COLOR, highlightthickness=1)
-        frame.pack(fill="both", expand=True, padx=12, pady=12)
+    def build_view_mf(self):
+        card = tk.Frame(self.view_mf, bg=COLOR_CARD, padx=16, pady=16,
+                        highlightbackground=COLOR_BORDER, highlightthickness=1)
+        card.pack(fill="both", expand=True)
 
-        # Canvas Matplotlib 3 Subplot
-        fig_mf = Figure(figsize=(10, 6), dpi=100, facecolor=BG_CARD)
+        fig_mf = Figure(figsize=(9, 5.5), dpi=100, facecolor=COLOR_CARD)
         axes = fig_mf.subplots(3, 1)
-
         sys = self.fuzzy_engine
 
         # Subplot 1: Suhu
         ax1 = axes[0]
-        ax1.set_facecolor(PLOT_BG)
+        ax1.set_facecolor("#1A1B20")
         ax1.plot(sys.suhu_range, trimf(sys.suhu_range, sys.mf_suhu['dingin']), color='#60A5FA', linewidth=2, label='Dingin [0, 0, 20]')
-        ax1.plot(sys.suhu_range, trimf(sys.suhu_range, sys.mf_suhu['normal']), color='#34D399', linewidth=2, label='Normal [15, 25, 35]')
-        ax1.plot(sys.suhu_range, trimf(sys.suhu_range, sys.mf_suhu['panas']), color='#F87171', linewidth=2, label='Panas [25, 40, 40]')
-        ax1.set_title("(a) Variabel Input: Suhu Udara Lingkungan (°C)", color=TEXT_MAIN, fontsize=9, fontweight='bold', pad=4)
-        ax1.set_xlim(0, 40)
-        ax1.set_ylim(-0.05, 1.05)
-        ax1.tick_params(colors=TEXT_MUTED, labelsize=8)
-        ax1.grid(True, linestyle='--', color='#334155', alpha=0.5)
-        ax1.legend(loc='upper right', facecolor=BG_CARD, edgecolor=BORDER_COLOR, labelcolor=TEXT_MAIN, fontsize=7)
-        for sp in ax1.spines.values(): sp.set_color(BORDER_COLOR)
+        ax1.plot(sys.suhu_range, trimf(sys.suhu_range, sys.mf_suhu['normal']), color=ACCENT_LIME, linewidth=2, label='Normal [15, 25, 35]')
+        ax1.plot(sys.suhu_range, trimf(sys.suhu_range, sys.mf_suhu['panas']), color=ACCENT_ROSE, linewidth=2, label='Panas [25, 40, 40]')
+        ax1.set_title("(a) Input: Suhu Udara Lingkungan (°C)", color=TEXT_WHITE, fontsize=8, fontweight='bold', pad=4)
+        ax1.set_xlim(0, 40); ax1.set_ylim(-0.05, 1.05)
+        ax1.tick_params(colors=TEXT_MUTED, labelsize=7)
+        ax1.grid(True, linestyle=':', color=COLOR_BORDER, alpha=0.5)
+        ax1.legend(loc='upper right', facecolor=COLOR_CARD, edgecolor=COLOR_BORDER, labelcolor=TEXT_WHITE, fontsize=7)
+        for sp in ax1.spines.values(): sp.set_color(COLOR_BORDER)
 
         # Subplot 2: Kelembapan
         ax2 = axes[1]
-        ax2.set_facecolor(PLOT_BG)
-        ax2.plot(sys.kelembapan_range, trimf(sys.kelembapan_range, sys.mf_kelembapan['kering']), color='#F59E0B', linewidth=2, label='Kering [0, 0, 50]')
-        ax2.plot(sys.kelembapan_range, trimf(sys.kelembapan_range, sys.mf_kelembapan['normal']), color='#10B981', linewidth=2, label='Normal [30, 50, 70]')
+        ax2.set_facecolor("#1A1B20")
+        ax2.plot(sys.kelembapan_range, trimf(sys.kelembapan_range, sys.mf_kelembapan['kering']), color=ACCENT_AMBER, linewidth=2, label='Kering [0, 0, 50]')
+        ax2.plot(sys.kelembapan_range, trimf(sys.kelembapan_range, sys.mf_kelembapan['normal']), color=ACCENT_LIME, linewidth=2, label='Normal [30, 50, 70]')
         ax2.plot(sys.kelembapan_range, trimf(sys.kelembapan_range, sys.mf_kelembapan['lembap']), color='#38BDF8', linewidth=2, label='Lembap [50, 100, 100]')
-        ax2.set_title("(b) Variabel Input: Kelembapan Tanah (%)", color=TEXT_MAIN, fontsize=9, fontweight='bold', pad=4)
-        ax2.set_xlim(0, 100)
-        ax2.set_ylim(-0.05, 1.05)
-        ax2.tick_params(colors=TEXT_MUTED, labelsize=8)
-        ax2.grid(True, linestyle='--', color='#334155', alpha=0.5)
-        ax2.legend(loc='upper right', facecolor=BG_CARD, edgecolor=BORDER_COLOR, labelcolor=TEXT_MAIN, fontsize=7)
-        for sp in ax2.spines.values(): sp.set_color(BORDER_COLOR)
+        ax2.set_title("(b) Input: Kelembapan Tanah (%)", color=TEXT_WHITE, fontsize=8, fontweight='bold', pad=4)
+        ax2.set_xlim(0, 100); ax2.set_ylim(-0.05, 1.05)
+        ax2.tick_params(colors=TEXT_MUTED, labelsize=7)
+        ax2.grid(True, linestyle=':', color=COLOR_BORDER, alpha=0.5)
+        ax2.legend(loc='upper right', facecolor=COLOR_CARD, edgecolor=COLOR_BORDER, labelcolor=TEXT_WHITE, fontsize=7)
+        for sp in ax2.spines.values(): sp.set_color(COLOR_BORDER)
 
         # Subplot 3: Durasi
         ax3 = axes[2]
-        ax3.set_facecolor(PLOT_BG)
-        ax3.plot(sys.durasi_range, trimf(sys.durasi_range, sys.mf_durasi['singkat']), color='#2DD4BF', linewidth=2, label='Singkat [0, 0, 12]')
-        ax3.plot(sys.durasi_range, trimf(sys.durasi_range, sys.mf_durasi['sedang']), color='#FBBF24', linewidth=2, label='Sedang [8, 15, 22]')
-        ax3.plot(sys.durasi_range, trimf(sys.durasi_range, sys.mf_durasi['lama']), color='#FB7185', linewidth=2, label='Lama [18, 30, 30]')
-        ax3.set_title("(c) Variabel Output: Durasi Penyiraman (Menit)", color=TEXT_MAIN, fontsize=9, fontweight='bold', pad=4)
-        ax3.set_xlim(0, 30)
-        ax3.set_ylim(-0.05, 1.05)
-        ax3.tick_params(colors=TEXT_MUTED, labelsize=8)
-        ax3.grid(True, linestyle='--', color='#334155', alpha=0.5)
-        ax3.legend(loc='upper right', facecolor=BG_CARD, edgecolor=BORDER_COLOR, labelcolor=TEXT_MAIN, fontsize=7)
-        for sp in ax3.spines.values(): sp.set_color(BORDER_COLOR)
+        ax3.set_facecolor("#1A1B20")
+        ax3.plot(sys.durasi_range, trimf(sys.durasi_range, sys.mf_durasi['singkat']), color='#5A5E6B', linewidth=2, label='Singkat [0, 0, 12]')
+        ax3.plot(sys.durasi_range, trimf(sys.durasi_range, sys.mf_durasi['sedang']), color=ACCENT_PURPLE, linewidth=2, label='Sedang [8, 15, 22]')
+        ax3.plot(sys.durasi_range, trimf(sys.durasi_range, sys.mf_durasi['lama']), color=ACCENT_LIME, linewidth=2, label='Lama [18, 30, 30]')
+        ax3.set_title("(c) Output: Durasi Penyiraman (Menit)", color=TEXT_WHITE, fontsize=8, fontweight='bold', pad=4)
+        ax3.set_xlim(0, 30); ax3.set_ylim(-0.05, 1.05)
+        ax3.tick_params(colors=TEXT_MUTED, labelsize=7)
+        ax3.grid(True, linestyle=':', color=COLOR_BORDER, alpha=0.5)
+        ax3.legend(loc='upper right', facecolor=COLOR_CARD, edgecolor=COLOR_BORDER, labelcolor=TEXT_WHITE, fontsize=7)
+        for sp in ax3.spines.values(): sp.set_color(COLOR_BORDER)
 
         fig_mf.tight_layout()
-
-        canvas_mf = FigureCanvasTkAgg(fig_mf, master=frame)
-        canvas_mf.get_tk_widget().pack(fill="both", expand=True, padx=6, pady=6)
+        canvas_mf = FigureCanvasTkAgg(fig_mf, master=card)
+        canvas_mf.get_tk_widget().pack(fill="both", expand=True)
 
     # =========================================================================
-    # TAB 3: TABEL PENGUJIAN 10 SKENARIO
+    # VIEW 3: TABEL PENGUJIAN 10 SKENARIO
     # =========================================================================
-    def build_tab_tabel(self):
-        container = tk.Frame(self.tab_tabel, bg=BG_DARK)
-        container.pack(fill="both", expand=True, padx=12, pady=12)
+    def build_view_tabel(self):
+        card = tk.Frame(self.view_tabel, bg=COLOR_CARD, padx=18, pady=18,
+                        highlightbackground=COLOR_BORDER, highlightthickness=1)
+        card.pack(fill="both", expand=True)
 
-        # Bar Kontrol Tabel
-        top_bar = tk.Frame(container, bg=BG_CARD, padx=14, pady=10, highlightbackground=BORDER_COLOR, highlightthickness=1)
-        top_bar.pack(fill="x", pady=(0, 10))
+        bar_action = tk.Frame(card, bg=COLOR_CARD)
+        bar_action.pack(fill="x", pady=(0, 12))
 
-        lbl_desc = tk.Label(top_bar, text="Tabel Pengujian 10 Data (5 Data Soal UTS + 5 Data Variasi Mahasiswa)",
-                            bg=BG_CARD, fg=TEXT_MAIN, font=("Segoe UI", 10, "bold"))
-        lbl_desc.pack(side="left")
+        lbl_t_head = tk.Label(bar_action, text="Hasil Evaluasi Batch 10 Skenario", bg=COLOR_CARD,
+                              fg=TEXT_WHITE, font=("Segoe UI", 11, "bold"))
+        lbl_t_head.pack(side="left")
 
-        btn_run_all = tk.Button(top_bar, text="▶️ Jalankan Evaluasi Ulang", bg=ACCENT_BLUE, fg="#FFFFFF",
-                                font=("Segoe UI", 9, "bold"), relief="flat", activebackground="#2563EB",
-                                cursor="hand2", padx=12, pady=4, command=self.populate_test_table)
-        btn_run_all.pack(side="right", padx=(6, 0))
+        btn_export = tk.Button(bar_action, text="📥  Ekspor CSV", bg=COLOR_CARD_HOVER, fg=TEXT_WHITE,
+                               font=("Segoe UI", 8, "bold"), relief="flat", activebackground="#353945",
+                               cursor="hand2", padx=12, pady=5, bd=0, highlightbackground=COLOR_BORDER,
+                               highlightthickness=1, command=self.export_table_to_csv)
+        btn_export.pack(side="right", padx=(8, 0))
 
-        btn_load_selected = tk.Button(top_bar, text="🔍 Tampilkan di Simulasi", bg="#334155", fg=TEXT_MAIN,
-                                      font=("Segoe UI", 9, "bold"), relief="flat", activebackground="#475569",
-                                      cursor="hand2", padx=12, pady=4, command=self.load_selected_to_simulation)
-        btn_load_selected.pack(side="right", padx=(6, 0))
-
-        btn_export = tk.Button(top_bar, text="📥 Ekspor ke CSV", bg="#065F46", fg="#A7F3D0",
-                               font=("Segoe UI", 9, "bold"), relief="flat", activebackground="#047857",
-                               cursor="hand2", padx=12, pady=4, command=self.export_table_to_csv)
-        btn_export.pack(side="right")
+        btn_apply = tk.Button(bar_action, text="⚡  Terapkan ke Simulasi", bg=ACCENT_LIME, fg=TEXT_DARK,
+                              font=("Segoe UI", 8, "bold"), relief="flat", activebackground="#BCE62C",
+                              cursor="hand2", padx=12, pady=5, bd=0, command=self.load_selected_to_simulation)
+        btn_apply.pack(side="right")
 
         # Treeview Kontainer
-        tree_frame = tk.Frame(container, bg=BG_CARD, highlightbackground=BORDER_COLOR, highlightthickness=1)
-        tree_frame.pack(fill="both", expand=True)
+        tree_box = tk.Frame(card, bg=COLOR_CARD)
+        tree_box.pack(fill="both", expand=True)
 
-        columns = ("no", "suhu", "kelembapan", "durasi", "kategori", "keterangan")
-        self.tree = ttk.Treeview(tree_frame, columns=columns, show="headings", selectmode="browse")
+        cols = ("no", "suhu", "kelembapan", "durasi", "kategori", "keterangan")
+        self.tree = ttk.Treeview(tree_box, columns=cols, show="headings", selectmode="browse")
 
         self.tree.heading("no", text="No")
         self.tree.heading("suhu", text="Suhu (°C)")
         self.tree.heading("kelembapan", text="Kelembapan (%)")
         self.tree.heading("durasi", text="Durasi (Menit)")
-        self.tree.heading("kategori", text="Kategori Output")
-        self.tree.heading("keterangan", text="Skenario Pengujian")
+        self.tree.heading("kategori", text="Kategori")
+        self.tree.heading("keterangan", text="Skenario Pengujian UTS")
 
         self.tree.column("no", width=45, anchor="center")
-        self.tree.column("suhu", width=100, anchor="center")
-        self.tree.column("kelembapan", width=120, anchor="center")
-        self.tree.column("durasi", width=130, anchor="center")
-        self.tree.column("kategori", width=130, anchor="center")
-        self.tree.column("keterangan", width=380, anchor="w")
+        self.tree.column("suhu", width=95, anchor="center")
+        self.tree.column("kelembapan", width=110, anchor="center")
+        self.tree.column("durasi", width=120, anchor="center")
+        self.tree.column("kategori", width=120, anchor="center")
+        self.tree.column("keterangan", width=360, anchor="w")
 
-        scrollbar = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscrollcommand=scrollbar.set)
+        scroll = ttk.Scrollbar(tree_box, orient="vertical", command=self.tree.yview)
+        self.tree.configure(yscrollcommand=scroll.set)
 
         self.tree.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
+        scroll.pack(side="right", fill="y")
 
         self.tree.bind("<Double-1>", lambda e: self.load_selected_to_simulation())
+        self.populate_table_data()
 
-        self.populate_test_table()
-
-    def populate_test_table(self):
-        # Bersihkan tabel
+    def populate_table_data(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
 
         from main import DATA_PENGUJIAN
         for d in DATA_PENGUJIAN:
             res = self.fuzzy_engine.compute(d['suhu'], d['kelembapan'])
-            durasi = res['hasil_defuzzifikasi']
-            if durasi <= 10.0: kat = "Singkat"
-            elif durasi <= 20.0: kat = "Sedang"
+            dur = res['hasil_defuzzifikasi']
+            if dur <= 10.0: kat = "Singkat"
+            elif dur <= 20.0: kat = "Sedang"
             else: kat = "Lama"
 
             self.tree.insert("", "end", values=(
-                d['no'],
-                f"{d['suhu']:.1f}",
-                f"{d['kelembapan']:.1f}",
-                f"{durasi:.2f}",
-                kat,
-                d['keterangan']
+                d['no'], f"{d['suhu']:.1f}", f"{d['kelembapan']:.1f}",
+                f"{dur:.2f}", kat, d['keterangan']
             ))
 
     def load_selected_to_simulation(self):
         sel = self.tree.selection()
         if not sel:
-            messagebox.showinfo("Pilih Data", "Silakan klik salah satu baris pengujian pada tabel terlebih dahulu!")
+            messagebox.showinfo("Pilih Baris", "Klik salah satu baris pada tabel untuk dimuat ke simulasi!")
             return
         vals = self.tree.item(sel[0], "values")
-        suhu = float(vals[1])
-        kelembapan = float(vals[2])
+        s = float(vals[1])
+        k = float(vals[2])
 
-        # Sinkronkan ke tab simulasi
-        self.var_suhu.set(suhu)
-        self.var_kelembapan.set(kelembapan)
-        self.var_suhu_text.set(f"{suhu:.1f}")
-        self.var_kelembapan_text.set(f"{kelembapan:.1f}")
-        self.update_simulation_live()
+        self.var_suhu.set(s)
+        self.var_kelembapan.set(k)
+        self.var_suhu_text.set(f"{s:.1f}")
+        self.var_kelembapan_text.set(f"{k:.1f}")
 
-        # Buka tab 1
-        self.notebook.select(self.tab_simulasi)
+        self.switch_view("simulasi")
 
     def export_table_to_csv(self):
         fpath = filedialog.asksaveasfilename(defaultextension=".csv",
                                              filetypes=[("CSV File", "*.csv"), ("All Files", "*.*")],
                                              initialfile="hasil_pengujian_10_data_uts.csv")
-        if not fpath:
-            return
+        if not fpath: return
         with open(fpath, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(["No", "Suhu (C)", "Kelembapan (%)", "Durasi (Menit)", "Kategori", "Skenario"])
             for child in self.tree.get_children():
                 writer.writerow(self.tree.item(child, "values"))
-        messagebox.showinfo("Ekspor Berhasil", f"Tabel pengujian berhasil diekspor ke:\n{fpath}")
+        messagebox.showinfo("Berhasil", f"Data berhasil diekspor ke:\n{fpath}")
 
     # =========================================================================
-    # TAB 4: RULE BASE & ANALISIS SOAL UTS
+    # VIEW 4: RULE BASE & ANALISIS SOAL UTS
     # =========================================================================
-    def build_tab_analisis(self):
-        container = tk.Frame(self.tab_analisis, bg=BG_DARK)
-        container.pack(fill="both", expand=True, padx=12, pady=12)
+    def build_view_analisis(self):
+        card = tk.Frame(self.view_analisis, bg=COLOR_CARD, padx=18, pady=18,
+                        highlightbackground=COLOR_BORDER, highlightthickness=1)
+        card.pack(fill="both", expand=True)
 
-        # Split 2 Kolom (Kiri: Matriks 9 Aturan, Kanan: Jawaban 4 Soal UTS)
-        left_box = tk.Frame(container, bg=BG_CARD, padx=12, pady=12, highlightbackground=BORDER_COLOR, highlightthickness=1)
-        left_box.pack(side="left", fill="both", expand=True, padx=(0, 6))
+        col_left = tk.Frame(card, bg=COLOR_CARD)
+        col_left.pack(side="left", fill="both", expand=True, padx=(0, 10))
 
-        right_box = tk.Frame(container, bg=BG_CARD, padx=12, pady=12, highlightbackground=BORDER_COLOR, highlightthickness=1)
-        right_box.pack(side="right", fill="both", expand=True, padx=(6, 0))
+        col_right = tk.Frame(card, bg=COLOR_CARD)
+        col_right.pack(side="right", fill="both", expand=True, padx=(10, 0))
 
-        # --- Kiri: 9 Rule Base ---
-        lbl_r_title = tk.Label(left_box, text="MATRIKS 9 RULE BASE (MAMDANI IF-THEN)", bg=BG_CARD, fg="#60A5FA", font=("Segoe UI", 10, "bold"))
-        lbl_r_title.pack(anchor="w", pady=(0, 8))
+        # Matriks 9 Aturan
+        lbl_r_head = tk.Label(col_left, text="Matriks 9 Aturan Fuzzy Mamdani", bg=COLOR_CARD,
+                              fg=ACCENT_LIME, font=("Segoe UI", 10, "bold"))
+        lbl_r_head.pack(anchor="w", pady=(0, 8))
 
-        txt_r = tk.Text(left_box, bg=BG_INPUT, fg=TEXT_MAIN, font=("Consolas", 9), bd=0, wrap="word",
-                        highlightbackground=BORDER_COLOR, highlightthickness=1)
+        txt_r = tk.Text(col_left, bg=COLOR_INPUT_BOX, fg=TEXT_WHITE, font=("Consolas", 9),
+                        bd=0, highlightbackground=COLOR_BORDER, highlightthickness=1, wrap="word")
         txt_r.pack(fill="both", expand=True)
 
-        rules_content = """DAFTAR 9 ATURAN FUZZY MAMDANI:
-==================================================
+        rules_str = """9 ATURAN INFERENSI FUZZY (MAMDANI):
+------------------------------------------------
 R1: IF Suhu DINGIN AND Kelembapan KERING
     THEN Durasi SEDANG
 R2: IF Suhu DINGIN AND Kelembapan NORMAL
     THEN Durasi SINGKAT
 R3: IF Suhu DINGIN AND Kelembapan LEMBAP
     THEN Durasi SINGKAT
---------------------------------------------------
+------------------------------------------------
 R4: IF Suhu NORMAL AND Kelembapan KERING
     THEN Durasi LAMA
 R5: IF Suhu NORMAL AND Kelembapan NORMAL
     THEN Durasi SEDANG
 R6: IF Suhu NORMAL AND Kelembapan LEMBAP
     THEN Durasi SINGKAT
---------------------------------------------------
+------------------------------------------------
 R7: IF Suhu PANAS  AND Kelembapan KERING
     THEN Durasi LAMA
 R8: IF Suhu PANAS  AND Kelembapan NORMAL
     THEN Durasi LAMA
 R9: IF Suhu PANAS  AND Kelembapan LEMBAP
     THEN Durasi SEDANG
-==================================================
-Karakteristik Mekatronika:
-• Kelembapan tanah memegang prioritas kendali kritis.
-• Ketika tanah LEMBAP, durasi penyiraman selalu
-  dibatasi pada level SINGKAT atau SEDANG demi
-  mencegah kejenuhan air dan pembusukan akar.
+------------------------------------------------
+Prinsip Mekatronika:
+• Kelembapan tanah memegang prioritas kendali.
+• Saat tanah LEMBAP, durasi penyiraman dibatasi
+  pada SINGKAT atau SEDANG demi mencegah busuk akar.
 """
-        txt_r.insert(tk.END, rules_content)
+        txt_r.insert(tk.END, rules_str)
         txt_r.configure(state="disabled")
 
-        # --- Kanan: Jawaban Pertanyaan Analisis UTS ---
-        lbl_a_title = tk.Label(right_box, text="JAWABAN 4 PERTANYAAN ANALISIS SOAL UTS", bg=BG_CARD, fg="#34D399", font=("Segoe UI", 10, "bold"))
-        lbl_a_title.pack(anchor="w", pady=(0, 8))
+        # Jawaban 4 Soal UTS
+        lbl_a_head = tk.Label(col_right, text="Jawaban 4 Pertanyaan Analisis Soal UTS", bg=COLOR_CARD,
+                              fg=ACCENT_LIME, font=("Segoe UI", 10, "bold"))
+        lbl_a_head.pack(anchor="w", pady=(0, 8))
 
-        txt_a = tk.Text(right_box, bg=BG_INPUT, fg=TEXT_MAIN, font=("Segoe UI", 9), bd=0, wrap="word",
-                        highlightbackground=BORDER_COLOR, highlightthickness=1)
+        txt_a = tk.Text(col_right, bg=COLOR_INPUT_BOX, fg=TEXT_WHITE, font=("Segoe UI", 9),
+                        bd=0, highlightbackground=COLOR_BORDER, highlightthickness=1, wrap="word")
         txt_a.pack(fill="both", expand=True)
 
-        analisis_content = """1. Mengapa tanah kering durasi lebih lama daripada tanah lembap?
+        ans_str = """1. Mengapa tanah kering durasi lebih lama dari tanah lembap?
 Jawab:
-Pada kondisi kering (kelembapan < 30%), kadar air berada di bawah kapasitas lapang. Air perlu waktu lebih lama agar meresap hingga zona perakaran aktif (root zone) dan tidak sekadar membasahi permukaan tanah yang cepat menguap. Sebaliknya, tanah lembap telah jenuh; penyiraman berlebih memicu genangan air (waterlogging) dan pembusukan akar (root rot).
+Pada kondisi kering (kelembapan < 30%), air tanah berada di bawah kapasitas lapang. Air butuh waktu lebih lama agar meresap ke zona perakaran aktif (root zone). Jika disiram singkat, air hanya membasahi lapisan atas yang lekas menguap. Sebaliknya pada kondisi lembap, pori tanah sudah jenuh; kelebihan air memicu genangan (waterlogging) dan pembusukan akar.
 
-2. Bagaimana perubahan membership function memengaruhi defuzzifikasi?
+2. Pengaruh perubahan membership function pada defuzzifikasi?
 Jawab:
-• Menggeser titik puncak atau memperlebar basis segitiga mengubah derajat keaktifan firing strength (α).
-• Luas area konsekuen yang terpotong ikut berubah. Karena centroid menghitung titik berat bidang z* = ∫(y·μ)dy / ∫μ dy, semakin besar luas area himpunan 'Lama', maka nilai defuzzifikasi akan semakin terdorong ke durasi yang lebih lama.
+Bentuk dan parameter kurva segitiga menentukan nilai firing strength (α) dan luas area implikasi. Karena metode Centroid menghitung titik berat z* = ∫(y·μ)dy / ∫μ dy, memperlebar himpunan 'Lama' akan memperbesar momen area kanan sehingga titik centroid bergeser ke durasi yang lebih lama.
 
-3. Apa yang terjadi jika suatu kombinasi input tidak memicu rule apapun?
+3. Apa jika kombinasi input tidak memicu rule apapun?
 Jawab:
-Seluruh α = 0, sehingga kurva agregasi datar pada nol (μ_agg = 0). Terjadi pembagian dengan nol (0/0 = indeterminate/NaN) pada centroid. Pada sistem fisik nyata, ini menyebabkan aktuator mengalami crash/undefined state. Di program ini dicegah dengan:
-(1) Overlap MF minimal 25% (tanpa blind spot).
-(2) Proteksi fallback default nilai aman.
+Seluruh α = 0, kurva agregasi datar pada nol (μ_agg = 0), dan terjadi pembagian nol (0/0 = NaN). Aktuator fisik akan mengalami undefined state/freeze. Di program ini dijamin aman dengan overlap kurva minimal 25% dan fallback nilai aman.
 
-4. Apakah hasil sistem selalu meningkat ketika suhu naik?
+4. Apakah hasil selalu meningkat ketika suhu naik?
 Jawab:
-TIDAK SELALU. Durasi penyiraman adalah fungsi multivariabel antara suhu dan kelembapan.
-Contoh bukti pengujian:
+TIDAK SELALU. Durasi ditentukan oleh interaksi multivariabel antara suhu dan kelembapan.
+Bukti Data:
 • Suhu 35°C & Kelembapan 15% -> Durasi: 25.68 Menit (Lama)
 • Suhu 32°C & Kelembapan 75% -> Durasi: 11.33 Menit (Sedang)
-Meskipun suhu tinggi, jika tanah lembap, sistem memprioritaskan efisiensi air (Rule 9).
+Meskipun suhu panas, jika tanah lembap, sistem memprioritaskan efisiensi air (Rule 9).
 """
-        txt_a.insert(tk.END, analisis_content)
+        txt_a.insert(tk.END, ans_str)
         txt_a.configure(state="disabled")
-
-    # =========================================================================
-    # STATUS BAR
-    # =========================================================================
-    def create_status_bar(self):
-        status_bar = tk.Frame(self, bg=BG_HEADER, height=28)
-        status_bar.pack(side="bottom", fill="x")
-
-        lbl_s_left = tk.Label(status_bar, text="● Sistem Aktif  |  Metode: Mamdani (Triangular MF - MIN - MAX - Centroid COG)",
-                              bg=BG_HEADER, fg=TEXT_MUTED, font=("Segoe UI", 8))
-        lbl_s_left.pack(side="left", padx=16, pady=3)
-
-        lbl_s_right = tk.Label(status_bar, text="Politeknik Enjinering Indorama (PEI) - TRM 2026/2027",
-                               bg=BG_HEADER, fg=TEXT_MUTED, font=("Segoe UI", 8))
-        lbl_s_right.pack(side="right", padx=16, pady=3)
 
 
 if __name__ == "__main__":
-    app = FuzzySprinklerGUI()
+    app = ModernFuzzySprinklerApp()
     app.mainloop()

@@ -148,8 +148,8 @@ def menu():
             print("\n[SELESAI] Semua proses telah dieksekusi dengan sukses!")
         elif pilihan == '5':
             print("\n[PROSES] Membuka Aplikasi Desktop GUI...")
-            from gui_app import FuzzySprinklerGUI
-            app = FuzzySprinklerGUI()
+            from gui_app import ModernFuzzySprinklerApp
+            app = ModernFuzzySprinklerApp()
             app.mainloop()
         elif pilihan == '0':
             print("Terima kasih. Program selesai.")
