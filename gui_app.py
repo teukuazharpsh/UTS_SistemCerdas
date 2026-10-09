@@ -141,7 +141,7 @@ class ModernFuzzySprinklerApp(tk.Tk):
         lbl_dosen_name.pack(anchor="w", pady=(2, 2))
 
         lbl_mk = tk.Label(dosen_card, text="MKP501 Sistem Cerdas • Sem 5", bg=COLOR_CARD,
-                          fg=ACCENT_LIME, font=("Segoe UI", 9.5, "bold"))
+                          fg=ACCENT_LIME, font=("Segoe UI", 10, "bold"))
         lbl_mk.pack(anchor="w")
 
         # 3. User Profile Card (Teuku Azhar Pasha - BERADA DI BAWAH KOTAK DOSEN)
@@ -170,7 +170,7 @@ class ModernFuzzySprinklerApp(tk.Tk):
         lbl_nim.pack(anchor="w", pady=(1, 1))
 
         lbl_prodi = tk.Label(user_info, text="TRM • PEI Purwakarta", bg=COLOR_CARD,
-                             fg=ACCENT_LIME, font=("Segoe UI", 8.5, "bold"))
+                             fg=ACCENT_LIME, font=("Segoe UI", 9, "bold"))
         lbl_prodi.pack(anchor="w")
 
         # 4. Navigasi Vertikal (Pill Menu)
@@ -404,11 +404,11 @@ class ModernFuzzySprinklerApp(tk.Tk):
 
         # Pill Status Kategori
         self.lbl_kategori_pill = tk.Label(card_output, text="SEDANG (8 – 22 Menit)", bg="#2B3024",
-                                          fg=ACCENT_LIME, font=("Segoe UI", 9.5, "bold"), padx=12, pady=5)
+                                          fg=ACCENT_LIME, font=("Segoe UI", 10, "bold"), padx=12, pady=5)
         self.lbl_kategori_pill.pack(anchor="w", pady=(4, 6))
 
         lbl_aktuator_status = tk.Label(card_output, text="● Status Pompa: Katup Otomatis Terbuka", bg=COLOR_CARD,
-                                       fg="#A3E635", font=("Segoe UI", 9.5, "bold"))
+                                       fg="#A3E635", font=("Segoe UI", 10, "bold"))
         lbl_aktuator_status.pack(anchor="w")
 
         # ----------------- KOLOM KANAN -----------------
@@ -435,10 +435,10 @@ class ModernFuzzySprinklerApp(tk.Tk):
         card_log.pack(fill="x")
 
         lbl_log_head = tk.Label(card_log, text="Aturan Aktif Saat Ini (Firing Strength α > 0)",
-                                bg=COLOR_CARD, fg=TEXT_WHITE, font=("Segoe UI", 10.5, "bold"))
+                                bg=COLOR_CARD, fg=TEXT_WHITE, font=("Segoe UI", 11, "bold"))
         lbl_log_head.pack(anchor="w", pady=(0, 6))
 
-        self.txt_rules = tk.Text(card_log, bg=COLOR_INPUT_BOX, fg="#FFFFFF", font=("Segoe UI", 9.5),
+        self.txt_rules = tk.Text(card_log, bg=COLOR_INPUT_BOX, fg="#FFFFFF", font=("Segoe UI", 10),
                                  bd=0, height=4, highlightbackground=COLOR_BORDER, highlightthickness=1, wrap="word",
                                  spacing1=3, spacing3=3)
         self.txt_rules.pack(fill="x")
