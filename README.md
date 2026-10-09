@@ -29,6 +29,7 @@ Sebuah sistem penyiraman tanaman otomatis dirancang agar durasi penyiraman menye
 
 ```text
 UTS - 09102026/
+├── gui_app.py               # [NEW] Aplikasi Desktop GUI Interaktif Modern (Two-Way Binding & Live Plot)
 ├── fuzzy_system.py          # Modul perhitungan Fuzzy Mamdani (Fuzzifikasi, Rules, Implikasi, Agregasi, Centroid)
 ├── visualizer.py            # Modul plotting grafik fungsi keanggotaan dan agregasi-centroid
 ├── main.py                  # Entrypoint CLI interaktif dan batch testing 10 data
@@ -54,8 +55,20 @@ Pastikan Python 3 telah terpasang dengan pustaka:
 pip install numpy matplotlib
 ```
 
-### 2. Menjalankan Menu Interaktif
-Jalankan file `main.py`:
+### 2. Menjalankan Aplikasi Desktop GUI (Rekomendasi Utama)
+Jalankan file `gui_app.py`:
+```bash
+python gui_app.py
+```
+Fitur Utama GUI:
+* **Identitas Lengkap**: Tersemat nama **Teuku Azhar Pasha (NIM: 202406036)**, Dosen **Dr. E. Agung Nugroho, ST., MT**, dan Prodi TRM PEI.
+* **Dual Input & Sinkronisasi 2 Arah**: Slider dan Text Box saling terhubung otomatis secara instan.
+* **Proteksi Batas (*Safety Clamping*)**: Jika nilai diinput melebihi rentang (misal Suhu > 40 °C), sistem otomatis melakukan saturasi ke batas aman dengan indikator badge peringatan.
+* **Live Matplotlib Display**: Grafik implikasi, agregasi MAX, dan garis centroid langsung bergerak mengikuti perubahan input.
+* **4 Tab Terpadu**: Simulasi Real-Time, Kurva MF, Tabel 10 Pengujian Interaktif (bisa ekspor ke CSV), dan Matriks 9 Rule Base beserta jawaban analisis UTS.
+
+### 3. Menjalankan Menu CLI Terminal
+Jika ingin menjalankan versi terminal:
 ```bash
 python main.py
 ```

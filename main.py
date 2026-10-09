@@ -129,10 +129,11 @@ def menu():
         print("2. Tampilkan Tabel Pengujian 10 Data & Generate Grafik Skenario")
         print("3. Generate Seluruh Grafik Membership Function")
         print("4. Jalankan Semua (Grafik, Pengujian 10 Data, dan Verifikasi)")
+        print("5. Buka Aplikasi Desktop GUI (Graphical User Interface)")
         print("0. Keluar")
         print("=" * 70)
 
-        pilihan = input("Pilih menu (0-4): ").strip()
+        pilihan = input("Pilih menu (0-5): ").strip()
         if pilihan == '1':
             hitung_interaktif(system)
         elif pilihan == '2':
@@ -145,6 +146,11 @@ def menu():
             print("\n[PROSES] Menjalankan pengujian 10 data...")
             jalankan_tabel_pengujian(system)
             print("\n[SELESAI] Semua proses telah dieksekusi dengan sukses!")
+        elif pilihan == '5':
+            print("\n[PROSES] Membuka Aplikasi Desktop GUI...")
+            from gui_app import FuzzySprinklerGUI
+            app = FuzzySprinklerGUI()
+            app.mainloop()
         elif pilihan == '0':
             print("Terima kasih. Program selesai.")
             break
