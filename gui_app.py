@@ -128,49 +128,49 @@ class ModernFuzzySprinklerApp(tk.Tk):
         lbl_sublogo.pack(anchor="w", pady=(2, 0))
 
         # 2. Kotak Dosen Pengampu & Mata Kuliah (BERADA DI ATAS KOTAK NAMA)
-        dosen_card = tk.Frame(self.sidebar, bg=COLOR_CARD, padx=14, pady=11,
+        dosen_card = tk.Frame(self.sidebar, bg=COLOR_CARD, padx=14, pady=12,
                               highlightbackground=COLOR_BORDER, highlightthickness=1)
         dosen_card.pack(fill="x", padx=16, pady=(0, 10))
 
-        lbl_dosen_tag = tk.Label(dosen_card, text="DOSEN PENGAMPU & MATA KULIAH", bg=COLOR_CARD, fg=TEXT_MUTED,
-                                 font=("Segoe UI", 7, "bold"))
+        lbl_dosen_tag = tk.Label(dosen_card, text="DOSEN PENGAMPU & MATA KULIAH", bg=COLOR_CARD, fg="#94A3B8",
+                                 font=("Segoe UI", 8, "bold"))
         lbl_dosen_tag.pack(anchor="w")
 
         lbl_dosen_name = tk.Label(dosen_card, text="Dr. E. Agung Nugroho, ST., MT", bg=COLOR_CARD,
-                                  fg=TEXT_WHITE, font=("Segoe UI", 9, "bold"))
-        lbl_dosen_name.pack(anchor="w", pady=(1, 2))
+                                  fg=TEXT_WHITE, font=("Segoe UI", 11, "bold"))
+        lbl_dosen_name.pack(anchor="w", pady=(2, 2))
 
         lbl_mk = tk.Label(dosen_card, text="MKP501 Sistem Cerdas • Sem 5", bg=COLOR_CARD,
-                          fg=ACCENT_LIME, font=("Segoe UI", 8, "bold"))
+                          fg=ACCENT_LIME, font=("Segoe UI", 9.5, "bold"))
         lbl_mk.pack(anchor="w")
 
         # 3. User Profile Card (Teuku Azhar Pasha - BERADA DI BAWAH KOTAK DOSEN)
-        user_card = tk.Frame(self.sidebar, bg=COLOR_CARD, padx=14, pady=11,
+        user_card = tk.Frame(self.sidebar, bg=COLOR_CARD, padx=14, pady=12,
                              highlightbackground=COLOR_BORDER, highlightthickness=1)
         user_card.pack(fill="x", padx=16, pady=(0, 16))
 
         # Avatar Box (Inisial Elegan)
-        avatar_box = tk.Frame(user_card, bg="#1A1B20", width=38, height=38,
+        avatar_box = tk.Frame(user_card, bg="#1A1B20", width=42, height=42,
                               highlightbackground=ACCENT_LIME, highlightthickness=1)
         avatar_box.pack(side="left", padx=(0, 10))
         avatar_box.pack_propagate(False)
         lbl_avatar = tk.Label(avatar_box, text="TAP", bg="#1A1B20", fg=ACCENT_LIME,
-                              font=("Segoe UI", 9, "bold"))
+                              font=("Segoe UI", 10, "bold"))
         lbl_avatar.pack(expand=True)
 
         user_info = tk.Frame(user_card, bg=COLOR_CARD)
         user_info.pack(side="left", fill="x", expand=True)
 
         lbl_nama = tk.Label(user_info, text="Teuku Azhar Pasha", bg=COLOR_CARD, fg=TEXT_WHITE,
-                            font=("Segoe UI", 9, "bold"))
+                            font=("Segoe UI", 11, "bold"))
         lbl_nama.pack(anchor="w")
 
-        lbl_nim = tk.Label(user_info, text="NIM: 202406036 (Genap)", bg=COLOR_CARD, fg=TEXT_MUTED,
-                           font=("Segoe UI", 8))
-        lbl_nim.pack(anchor="w")
+        lbl_nim = tk.Label(user_info, text="NIM: 202406036 (Genap)", bg=COLOR_CARD, fg="#F1F5F9",
+                           font=("Segoe UI", 10, "bold"))
+        lbl_nim.pack(anchor="w", pady=(1, 1))
 
         lbl_prodi = tk.Label(user_info, text="TRM • PEI Purwakarta", bg=COLOR_CARD,
-                             fg=ACCENT_LIME, font=("Segoe UI", 7, "bold"))
+                             fg=ACCENT_LIME, font=("Segoe UI", 8.5, "bold"))
         lbl_prodi.pack(anchor="w")
 
         # 4. Navigasi Vertikal (Pill Menu)
@@ -404,11 +404,11 @@ class ModernFuzzySprinklerApp(tk.Tk):
 
         # Pill Status Kategori
         self.lbl_kategori_pill = tk.Label(card_output, text="SEDANG (8 – 22 Menit)", bg="#2B3024",
-                                          fg=ACCENT_LIME, font=("Segoe UI", 8, "bold"), padx=10, pady=4)
+                                          fg=ACCENT_LIME, font=("Segoe UI", 9.5, "bold"), padx=12, pady=5)
         self.lbl_kategori_pill.pack(anchor="w", pady=(4, 6))
 
-        lbl_aktuator_status = tk.Label(card_output, text="Status Pompa: Katup Otomatis Terbuka", bg=COLOR_CARD,
-                                       fg=TEXT_MUTED, font=("Segoe UI", 8))
+        lbl_aktuator_status = tk.Label(card_output, text="● Status Pompa: Katup Otomatis Terbuka", bg=COLOR_CARD,
+                                       fg="#A3E635", font=("Segoe UI", 9.5, "bold"))
         lbl_aktuator_status.pack(anchor="w")
 
         # ----------------- KOLOM KANAN -----------------
@@ -435,11 +435,12 @@ class ModernFuzzySprinklerApp(tk.Tk):
         card_log.pack(fill="x")
 
         lbl_log_head = tk.Label(card_log, text="Aturan Aktif Saat Ini (Firing Strength α > 0)",
-                                bg=COLOR_CARD, fg=TEXT_MUTED, font=("Segoe UI", 9, "bold"))
-        lbl_log_head.pack(anchor="w", pady=(0, 4))
+                                bg=COLOR_CARD, fg=TEXT_WHITE, font=("Segoe UI", 10.5, "bold"))
+        lbl_log_head.pack(anchor="w", pady=(0, 6))
 
-        self.txt_rules = tk.Text(card_log, bg=COLOR_INPUT_BOX, fg=TEXT_WHITE, font=("Consolas", 8),
-                                 bd=0, height=4, highlightbackground=COLOR_BORDER, highlightthickness=1, wrap="word")
+        self.txt_rules = tk.Text(card_log, bg=COLOR_INPUT_BOX, fg="#FFFFFF", font=("Segoe UI", 9.5),
+                                 bd=0, height=4, highlightbackground=COLOR_BORDER, highlightthickness=1, wrap="word",
+                                 spacing1=3, spacing3=3)
         self.txt_rules.pack(fill="x")
 
     # =========================================================================
@@ -587,53 +588,56 @@ class ModernFuzzySprinklerApp(tk.Tk):
         else:
             self.lbl_kategori_pill.configure(text="LAMA (18 – 30 Menit)")
 
-        # Update List Aturan
+        # Update List Aturan (Format Sangat Jelas & Mudah Dibaca)
         self.txt_rules.delete("1.0", tk.END)
         found = False
         for r in res['rule_evaluations']:
             if r['alpha'] > 0:
                 found = True
                 rule_tag = r['description'].split(':')[0]
-                self.txt_rules.insert(tk.END, f"• {rule_tag}: α = {r['alpha']:.3f} -> Output: {r['output_label'].upper()} | {r['description'].split(': ')[1]}\n")
+                rule_detail = r['description'].split(': ')[1]
+                self.txt_rules.insert(tk.END, f"• [{rule_tag}]  α = {r['alpha']:.3f}  →  Output: {r['output_label'].upper()}\n")
+                self.txt_rules.insert(tk.END, f"   Kondisi: {rule_detail}\n\n")
         if not found:
-            self.txt_rules.insert(tk.END, "• Tidak ada aturan aktif (Fallback aman)\n")
+            self.txt_rules.insert(tk.END, "• Tidak ada aturan aktif (Fallback batas aman)\n")
 
         # Render Canvas Plot
         self.ax_sim.clear()
         x = res['durasi_range']
         agg = res['aggregated']
 
-        # Garis referensi halus
-        self.ax_sim.plot(x, res['mf_durasi_curves']['singkat'], color='#5A5E6B', linestyle='--', linewidth=1.0, alpha=0.5, label='Singkat')
-        self.ax_sim.plot(x, res['mf_durasi_curves']['sedang'], color=ACCENT_PURPLE, linestyle='--', linewidth=1.0, alpha=0.5, label='Sedang')
-        self.ax_sim.plot(x, res['mf_durasi_curves']['lama'], color=ACCENT_ROSE, linestyle='--', linewidth=1.0, alpha=0.5, label='Lama')
+        # Garis referensi tegas & kontras
+        self.ax_sim.plot(x, res['mf_durasi_curves']['singkat'], color='#94A3B8', linestyle='--', linewidth=1.5, alpha=0.8, label='Singkat')
+        self.ax_sim.plot(x, res['mf_durasi_curves']['sedang'], color=ACCENT_PURPLE, linestyle='--', linewidth=1.5, alpha=0.9, label='Sedang')
+        self.ax_sim.plot(x, res['mf_durasi_curves']['lama'], color=ACCENT_ROSE, linestyle='--', linewidth=1.5, alpha=0.9, label='Lama')
 
         # Area Agregasi (Arsiran Abu-abu Gelap / Dark Charcoal)
         self.ax_sim.fill_between(x, 0, agg, facecolor="#353945", alpha=0.8, label='Agregasi Area (MAX)')
-        self.ax_sim.plot(x, agg, color="#7B8092", linewidth=1.8)
+        self.ax_sim.plot(x, agg, color="#A1A1AA", linewidth=2.0)
 
         # Garis Centroid Berpendar (Electric Lime Accent)
-        self.ax_sim.axvline(x=durasi, color=ACCENT_LIME, linestyle='-', linewidth=2.5,
+        self.ax_sim.axvline(x=durasi, color=ACCENT_LIME, linestyle='-', linewidth=2.8,
                             label=f'Centroid: {durasi:.2f} m')
 
         idx_c = np.abs(x - durasi).argmin()
-        self.ax_sim.scatter([durasi], [agg[idx_c]], color=ACCENT_LIME, s=80, zorder=6, edgecolors=COLOR_CARD, linewidth=1.5)
+        self.ax_sim.scatter([durasi], [agg[idx_c]], color=ACCENT_LIME, s=90, zorder=6, edgecolors='#18191D', linewidth=2.0)
 
-        # Styling Plot Sesuai Palet
+        # Styling Plot Sesuai Palet (Font Jelas & Kontras Tinggi)
         self.ax_sim.set_title(f"Durasi Centroid = {durasi:.2f} menit  (Suhu: {suhu:.1f}°C, Kelembapan: {kelembapan:.1f}%)",
-                              color=TEXT_WHITE, fontsize=9, fontweight='bold', pad=8)
-        self.ax_sim.set_xlabel("Durasi Penyiraman (Menit)", color=TEXT_MUTED, fontsize=8)
-        self.ax_sim.set_ylabel("Derajat Keanggotaan (μ)", color=TEXT_MUTED, fontsize=8)
+                              color=TEXT_WHITE, fontsize=10.5, fontweight='bold', pad=10)
+        self.ax_sim.set_xlabel("Durasi Penyiraman (Menit)", color="#CBD5E1", fontsize=9, fontweight='bold')
+        self.ax_sim.set_ylabel("Derajat Keanggotaan (μ)", color="#CBD5E1", fontsize=9, fontweight='bold')
         self.ax_sim.set_xlim(0, 30)
         self.ax_sim.set_ylim(-0.05, 1.05)
 
-        self.ax_sim.tick_params(colors=TEXT_MUTED, labelsize=8)
+        self.ax_sim.tick_params(colors="#CBD5E1", labelsize=8.5)
         for spine in self.ax_sim.spines.values():
             spine.set_color(COLOR_BORDER)
 
-        self.ax_sim.grid(True, linestyle=':', color="#2E313A", alpha=0.6)
-        self.ax_sim.legend(loc='upper right', facecolor=COLOR_CARD, edgecolor=COLOR_BORDER,
-                           labelcolor=TEXT_WHITE, fontsize=7, framealpha=0.95)
+        self.ax_sim.grid(True, linestyle=':', color="#2E313A", alpha=0.7)
+        # Legend Font Besar, Jelas, & Kontras Tinggi
+        self.ax_sim.legend(loc='upper right', facecolor='#18191E', edgecolor='#474C5A',
+                           labelcolor='#FFFFFF', fontsize=9.5, framealpha=0.96)
 
         self.fig_sim.tight_layout()
         self.canvas_sim.draw()
@@ -664,11 +668,11 @@ class ModernFuzzySprinklerApp(tk.Tk):
         ax1.plot(sys.suhu_range, trimf(sys.suhu_range, sys.mf_suhu['dingin']), color='#60A5FA', linewidth=2, label='Dingin [0, 0, 20]')
         ax1.plot(sys.suhu_range, trimf(sys.suhu_range, sys.mf_suhu['normal']), color=ACCENT_LIME, linewidth=2, label='Normal [15, 25, 35]')
         ax1.plot(sys.suhu_range, trimf(sys.suhu_range, sys.mf_suhu['panas']), color=ACCENT_ROSE, linewidth=2, label='Panas [25, 40, 40]')
-        ax1.set_title("(a) Input: Suhu Udara Lingkungan (°C)", color=TEXT_WHITE, fontsize=8, fontweight='bold', pad=4)
+        ax1.set_title("(a) Input: Suhu Udara Lingkungan (°C)", color=TEXT_WHITE, fontsize=9.5, fontweight='bold', pad=4)
         ax1.set_xlim(0, 40); ax1.set_ylim(-0.05, 1.05)
-        ax1.tick_params(colors=TEXT_MUTED, labelsize=7)
-        ax1.grid(True, linestyle=':', color=COLOR_BORDER, alpha=0.5)
-        ax1.legend(loc='upper right', facecolor=COLOR_CARD, edgecolor=COLOR_BORDER, labelcolor=TEXT_WHITE, fontsize=7)
+        ax1.tick_params(colors="#CBD5E1", labelsize=8)
+        ax1.grid(True, linestyle=':', color=COLOR_BORDER, alpha=0.6)
+        ax1.legend(loc='upper right', facecolor='#18191E', edgecolor='#474C5A', labelcolor='#FFFFFF', fontsize=9, framealpha=0.96)
         for sp in ax1.spines.values(): sp.set_color(COLOR_BORDER)
 
         # Subplot 2: Kelembapan
@@ -677,24 +681,24 @@ class ModernFuzzySprinklerApp(tk.Tk):
         ax2.plot(sys.kelembapan_range, trimf(sys.kelembapan_range, sys.mf_kelembapan['kering']), color=ACCENT_AMBER, linewidth=2, label='Kering [0, 0, 50]')
         ax2.plot(sys.kelembapan_range, trimf(sys.kelembapan_range, sys.mf_kelembapan['normal']), color=ACCENT_LIME, linewidth=2, label='Normal [30, 50, 70]')
         ax2.plot(sys.kelembapan_range, trimf(sys.kelembapan_range, sys.mf_kelembapan['lembap']), color='#38BDF8', linewidth=2, label='Lembap [50, 100, 100]')
-        ax2.set_title("(b) Input: Kelembapan Tanah (%)", color=TEXT_WHITE, fontsize=8, fontweight='bold', pad=4)
+        ax2.set_title("(b) Input: Kelembapan Tanah (%)", color=TEXT_WHITE, fontsize=9.5, fontweight='bold', pad=4)
         ax2.set_xlim(0, 100); ax2.set_ylim(-0.05, 1.05)
-        ax2.tick_params(colors=TEXT_MUTED, labelsize=7)
-        ax2.grid(True, linestyle=':', color=COLOR_BORDER, alpha=0.5)
-        ax2.legend(loc='upper right', facecolor=COLOR_CARD, edgecolor=COLOR_BORDER, labelcolor=TEXT_WHITE, fontsize=7)
+        ax2.tick_params(colors="#CBD5E1", labelsize=8)
+        ax2.grid(True, linestyle=':', color=COLOR_BORDER, alpha=0.6)
+        ax2.legend(loc='upper right', facecolor='#18191E', edgecolor='#474C5A', labelcolor='#FFFFFF', fontsize=9, framealpha=0.96)
         for sp in ax2.spines.values(): sp.set_color(COLOR_BORDER)
 
         # Subplot 3: Durasi
         ax3 = axes[2]
         ax3.set_facecolor("#1A1B20")
-        ax3.plot(sys.durasi_range, trimf(sys.durasi_range, sys.mf_durasi['singkat']), color='#5A5E6B', linewidth=2, label='Singkat [0, 0, 12]')
+        ax3.plot(sys.durasi_range, trimf(sys.durasi_range, sys.mf_durasi['singkat']), color='#94A3B8', linewidth=2, label='Singkat [0, 0, 12]')
         ax3.plot(sys.durasi_range, trimf(sys.durasi_range, sys.mf_durasi['sedang']), color=ACCENT_PURPLE, linewidth=2, label='Sedang [8, 15, 22]')
         ax3.plot(sys.durasi_range, trimf(sys.durasi_range, sys.mf_durasi['lama']), color=ACCENT_LIME, linewidth=2, label='Lama [18, 30, 30]')
-        ax3.set_title("(c) Output: Durasi Penyiraman (Menit)", color=TEXT_WHITE, fontsize=8, fontweight='bold', pad=4)
+        ax3.set_title("(c) Output: Durasi Penyiraman (Menit)", color=TEXT_WHITE, fontsize=9.5, fontweight='bold', pad=4)
         ax3.set_xlim(0, 30); ax3.set_ylim(-0.05, 1.05)
-        ax3.tick_params(colors=TEXT_MUTED, labelsize=7)
-        ax3.grid(True, linestyle=':', color=COLOR_BORDER, alpha=0.5)
-        ax3.legend(loc='upper right', facecolor=COLOR_CARD, edgecolor=COLOR_BORDER, labelcolor=TEXT_WHITE, fontsize=7)
+        ax3.tick_params(colors="#CBD5E1", labelsize=8)
+        ax3.grid(True, linestyle=':', color=COLOR_BORDER, alpha=0.6)
+        ax3.legend(loc='upper right', facecolor='#18191E', edgecolor='#474C5A', labelcolor='#FFFFFF', fontsize=9, framealpha=0.96)
         for sp in ax3.spines.values(): sp.set_color(COLOR_BORDER)
 
         fig_mf.tight_layout()
